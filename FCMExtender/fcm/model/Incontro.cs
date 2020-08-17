@@ -5,10 +5,16 @@ namespace fcm.model
 
     public class Incontro
     {
-        public string idIncontro;
+        public int idIncontro;
         public Boolean fattoreCampo;
-        public string casa;
-        public string trasferta;
+        public int casa;
+        public int trasferta;
+        public double parzcasa;
+        public double parzfuori;
+        public double totcasa;
+        public double totfuori;
+        public int golcasa;
+        public int golfuori;
     }
 
 }

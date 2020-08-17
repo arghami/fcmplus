@@ -55,6 +55,7 @@
     <Compile Include="fcm\calcolatore\CalcoliHelper.cs" />
     <Compile Include="fcm\exception\InvalidGiornataException.cs" />
     <Compile Include="fcm\model\Fascia.cs" />
+    <Compile Include="fcm\model\FCData.cs" />
     <Compile Include="fcm\model\Giocatore.cs" />
     <Compile Include="fcm\model\Incontro.cs" />
     <Compile Include="fcm\model\Match.cs" />

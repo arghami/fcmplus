@@ -1,4 +1,6 @@
-﻿namespace math.utils
+﻿using System.Globalization;
+
+namespace math.utils
 {
     public class NumParser
     {
@@ -13,7 +15,7 @@
         public static double parseDouble(string s)
         {
             double ret;
-            double.TryParse(s, out ret);
+            double.TryParse(s, NumberStyles.Number, CultureInfo.CreateSpecificCulture ("en-US"), out ret);
             return ret;
         }
     }

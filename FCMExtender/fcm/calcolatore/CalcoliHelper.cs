@@ -97,14 +97,14 @@ namespace fcm.calcolatore
 
             //bonus moduli
             String moduloJ = calcModulo(tabellinoJ.ruoli);
-            if (regole.moduli[moduloJ] != null)
+            if (regole.moduli.ContainsKey(moduloJ) && regole.moduli[moduloJ] != null)
             {
                 squadraJ.modModulo += regole.moduli[moduloJ].modif;
                 squadraK.modModulo += regole.moduli[moduloJ].modifAvv;
             }
 
             String moduloK = calcModulo(tabellinoK.ruoli);
-            if (regole.moduli[moduloK] != null)
+            if (regole.moduli.ContainsKey(moduloK) && regole.moduli[moduloK] != null)
             {
                 squadraK.modModulo += regole.moduli[moduloK].modif;
                 squadraJ.modModulo += regole.moduli[moduloK].modifAvv;

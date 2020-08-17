@@ -5,5 +5,6 @@ namespace fcm.model
         public string voto;
         public string votoPuro;
         public string ruolo;
+        public FCMData fcData;
     }
 }

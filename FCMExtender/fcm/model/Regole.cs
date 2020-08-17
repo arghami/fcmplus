@@ -50,34 +50,34 @@ namespace fcm.model
                 {
                     while (rea.Read())
                     {
-                        puntiPerVittoria = rea.GetInt32(1);
-                        fattoreCampo = rea.GetDouble(2);
-                        regolaPortiere = rea.GetBoolean(3);
-                        regolaDifesa = rea.GetBoolean(4);
-                        regolaCentMedia = rea.GetBoolean(5);
-                        regolaCentDiffe = rea.GetBoolean(6);
-                        regolaDiff4 = rea.GetBoolean(7);
-                        regolaDiff10 = rea.GetBoolean(8);
-                        regolaMin60 = rea.GetBoolean(9);
-                        usaSpeciale1 = rea.GetBoolean(10);
-                        usaSpeciale2 = rea.GetBoolean(11);
-                        usaSpeciale3 = rea.GetBoolean(12);
-                        regolaAttacco = rea.GetBoolean(13);
-                        regolaDelta3 = rea.GetBoolean(14);
-                        regolaMin59 = rea.GetBoolean(15);
-                        regolaDiff4Valore = rea.GetDouble(16);
-                        regolaDiff10Valore = rea.GetDouble(17);
-                        regolaMin60Valore = rea.GetDouble(18);
-                        regolaMin60Delta = rea.GetDouble(19);
-                        regolaDelta3Valore = rea.GetDouble(20);
-                        regolaMin59Valore = rea.GetDouble(21);
-                        regolaMin59Delta = rea.GetDouble(22);
-                        regolaMin59Almeno = rea.GetDouble(23);
-                        VUCentrocampista = rea.GetDouble(24);
-                        regolaDifesaVU = rea.GetBoolean(25);
-                        VUDifensore = rea.GetDouble(26);
+                        puntiPerVittoria = rea.GetInt32(0);
+                        fattoreCampo = rea.GetDouble(1);
+                        regolaPortiere = rea.GetBoolean(2);
+                        regolaDifesa = rea.GetBoolean(3);
+                        regolaCentMedia = rea.GetBoolean(4);
+                        regolaCentDiffe = rea.GetBoolean(5);
+                        regolaDiff4 = rea.GetBoolean(6);
+                        regolaDiff10 = rea.GetBoolean(7);
+                        regolaMin60 = rea.GetBoolean(8);
+                        usaSpeciale1 = rea.GetBoolean(9);
+                        usaSpeciale2 = rea.GetBoolean(10);
+                        usaSpeciale3 = rea.GetBoolean(11);
+                        regolaAttacco = rea.GetBoolean(12);
+                        regolaDelta3 = rea.GetBoolean(13);
+                        regolaMin59 = rea.GetBoolean(14);
+                        regolaDiff4Valore = rea.GetDouble(15);
+                        regolaDiff10Valore = rea.GetDouble(16);
+                        regolaMin60Valore = rea.GetDouble(17);
+                        regolaMin60Delta = rea.GetDouble(18);
+                        regolaDelta3Valore = rea.GetDouble(19);
+                        regolaMin59Valore = rea.GetDouble(20);
+                        regolaMin59Delta = rea.GetDouble(21);
+                        regolaMin59Almeno = rea.GetDouble(22);
+                        VUCentrocampista = rea.GetDouble(23);
+                        regolaDifesaVU = rea.GetBoolean(24);
+                        VUDifensore = rea.GetDouble(25);
 
-                        FCMExtender.log("puntiPerVittoria: " + puntiPerVittoria);
+                        /*FCMExtender.log("puntiPerVittoria: " + puntiPerVittoria);
                         FCMExtender.log("fattoreCampo: " + fattoreCampo);
                         FCMExtender.log("regolaPortiere: " + regolaPortiere);
                         FCMExtender.log("regolaDifesa: " + regolaDifesa);
@@ -102,7 +102,7 @@ namespace fcm.model
                         FCMExtender.log("regolaMin59Almeno: " + regolaMin59Almeno);
                         FCMExtender.log("VUCentrocampista: " + VUCentrocampista);
                         FCMExtender.log("regolaDifesaVU: " + regolaDifesaVU);
-                        FCMExtender.log("VUDifensore: " + VUDifensore);
+                        FCMExtender.log("VUDifensore: " + VUDifensore);*/
                     }
                 }
             }
@@ -117,10 +117,10 @@ namespace fcm.model
                 {
                     while (rea.Read())
                     {
-                        string mod = rea.GetInt32(1) + "-" + rea.GetString(2) + "-" + rea.GetString(3);
-                        moduli.Add(mod, new Modulo(rea.GetDouble(4), rea.GetDouble(5)));
+                        string mod = rea.GetInt32(0) + "-" + rea.GetString(1) + "-" + rea.GetString(2);
+                        moduli.Add(mod, new Modulo(rea.GetDouble(3), rea.GetDouble(4)));
                     }
-                    FCMExtender.log("Moduli: " + moduli);
+                    //FCMExtender.log("Moduli: " + moduli);
                 }
             }
         }
