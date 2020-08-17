@@ -3,7 +3,7 @@ using Jurassic;
 using Jurassic.Library;
 using math.utils;
 
-namespace fcm.entity
+namespace bridge.model
 {
     public class TabellinoWrapper : ObjectInstance
     {

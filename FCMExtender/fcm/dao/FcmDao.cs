@@ -1,4 +1,5 @@
 
+using fcm.exception;
 using fcm.model;
 using System;
 using System.Collections.Generic;
@@ -11,7 +12,8 @@ namespace fcm.dao
 
         private OdbcConnection conn;
 
-        public FcmDao(string filename) {
+        public FcmDao(string filename)
+        {
             conn.ConnectionString = @"Driver={Microsoft Access Driver (*.mdb)};Dbq=" + filename + ";";
             conn.Open();
         }
@@ -79,10 +81,11 @@ namespace fcm.dao
             }
         }
 
-        public Regole getRegoleCompetizione (string idCompetizione) {
-		    //logger.info("Estrazione delle regole della competizione");
-		    return new Regole(conn, idCompetizione);
-	    }
+        public Regole getRegoleCompetizione(string idCompetizione)
+        {
+            //logger.info("Estrazione delle regole della competizione");
+            return new Regole(conn, idCompetizione);
+        }
 
         public List<int> getGiornate(string idGirone)
         {
@@ -119,120 +122,139 @@ namespace fcm.dao
                 }
             }
         }
-	
-	    public List<Incontro> getIncontri (string idGirone, int idGiornata) throws PluginException{
-		    logger.info("Estrazione incontri");
-		    try (
-				    Statement stmt = conn.createStatement();
-				    ResultSet rs = stmt.executeQuery("SELECT id, idcasa, idfuori, idtipo FROM incontro WHERE idgirone = "+idGirone+" AND idGiornata = "+idGiornata);
-				    ){
 
-			    List<Incontro> listaIncontri = new ArrayList<>();
-			    while (rs.next()){
-				    Incontro inc = new Incontro();
-				    if (rs.getInt(4)==1){
-					    inc.fattoreCampo = true;
-				    }
-				    inc.idIncontro=rs.GetString(1);
-				    inc.casa = rs.GetString(2);
-				    inc.trasferta = rs.GetString(3);
-				    listaIncontri.add(inc);
-			    }
-			    return listaIncontri;
-		    } catch (SQLException e) {
-			    logger.severe(e.getMessage());
-			    throw new PluginException("");
-		    }
-	    }
-	
-	    public Map<Integer, Tabellino> getTabellini (ArrayList<string> idIncontri) throws PluginException, InvalidGiornataException{
-		    logger.info("Estrazione tabellini");
-		    string filtro = idIncontri.tostring().replace("[", "(").replace("]", ")");
-		    try (
-				    Statement stmt = conn.createStatement();
-				    ResultSet rs = stmt.executeQuery("SELECT idsquadra, tot, ruolo, modportiere, modattacco, moddifesa, voto, modm1pers, modm2pers, modm3pers FROM tabellino WHERE idincontro IN "+filtro+" ORDER BY idsquadra");
-				    ){
+        public List<Incontro> getIncontri(string idGirone, int idGiornata)
+        {
+            //logger.info("Estrazione incontri");
+            using (OdbcCommand cmd = conn.CreateCommand())
+            {
+                cmd.CommandText = "SELECT id, idcasa, idfuori, idtipo FROM incontro WHERE idgirone = " + idGirone + " AND idGiornata = " + idGiornata;
+                using (OdbcDataReader rea = cmd.ExecuteReader())
+                {
 
-			    Map<Integer, Tabellino> mapTabellini = new HashMap<>();
-			    boolean saltaGiornata = true;
-			    while (rs.next()){
-				    Tabellino tab = new Tabellino();
-				    string votistring = rs.GetString(2);
-				    if (votistring!=null){
-					    tab.voti = votistring.split("%");
-					    saltaGiornata = false;
-				    }
-				    string ruolistring = rs.GetString(3);
-				    if (ruolistring!=null){
-					    tab.ruoli = ruolistring.split("%");
-					    saltaGiornata = false;
-				    }
-				    tab.modPortiere = rs.getDouble(4);
-				    tab.modAttacco = rs.getDouble(5);
-				    tab.modDifesa = rs.getDouble(6);
+                    List<Incontro> listaIncontri = new List<Incontro>();
+                    while (rea.Read())
+                    {
+                        Incontro inc = new Incontro();
+                        if (rea.GetInt32(4) == 1)
+                        {
+                            inc.fattoreCampo = true;
+                        }
+                        inc.idIncontro = rea.GetString(1);
+                        inc.casa = rea.GetString(2);
+                        inc.trasferta = rea.GetString(3);
+                        listaIncontri.Add(inc);
+                    }
+                    return listaIncontri;
+                }
+            }
+        }
 
-				    string votipuristring = rs.GetString(7);
-				    if (votipuristring!=null){
-					    tab.votipuri = votipuristring.split("%");
-					    saltaGiornata = false;
-				    }
-				
-				    tab.modPers1 = rs.getDouble(8);
-				    tab.modPers2 = rs.getDouble(9);
-				    tab.modPers3 = rs.getDouble(10);
-				    mapTabellini.put(rs.getInt(1), tab);
-			    }
-			    if (saltaGiornata){
-				    throw new InvalidGiornataException();
-			    }
-			    return mapTabellini;
-		    } catch (SQLException e) {
-			    logger.severe(e.getMessage());
-			    throw new PluginException("");
-		    }
-	    }
-	
-	    public List<Fascia> getFasceConversioneGol (string idCompetizione) throws PluginException{
-		    logger.info("Estrazione fasce gol");
-		    return getDatiDaFasceByQuery("SELECT f.valore, f.min, f.max FROM tabellagol g, fascia f WHERE g.idCompetizione = "+idCompetizione+" AND g.idFascia=f.id");
-	    }
-	
-	    public List<Fascia> getFasceModificatoreDifesa (string idCompetizione) throws PluginException{
-		    logger.info("Estrazione fasce modificatore difesa");
-		    return getDatiDaFasceByQuery("SELECT f.valore, f.min, f.max FROM tabelladifesa d, fascia f WHERE d.idcompetizione = "+idCompetizione+" AND d.idfascia=f.id");
-	    }
-	
-	    public List<Fascia> getContributoNumeroDifensoriModificatoreDifesa (string idCompetizione) throws PluginException{
-		    logger.info("Estrazione contributo numero difensori per modificatore difesa");
-		    return getDatiDaFasceByQuery("SELECT f.valore, f.min, f.max FROM tabellanumdifensori d, fascia f WHERE d.idcompetizione = "+idCompetizione+" AND d.idfascia=f.id");
-	    }
-	
-	    public List<Fascia> getFasceModificatoreCentrocampo (string idCompetizione) throws PluginException{
-		    logger.info("Estrazione fasce modifcatore centrocampo");
-		    return getDatiDaFasceByQuery("SELECT f.valore, f.min, f.max FROM tabellacentrocampodiffe d, fascia f WHERE d.idcompetizione = "+idCompetizione+" AND d.idfascia=f.id");
-	    }
-	
-	    private List<Fascia> getDatiDaFasceByQuery (string query) throws PluginException{
-		    try (
-				    Statement stmt = conn.createStatement();
-				    ResultSet rs = stmt.executeQuery(query);
-				    ){
+        public Dictionary<int, Tabellino> getTabellini(List<string> idIncontri)
+        {
+            //logger.info("Estrazione tabellini");
+            string filtro = generaFilter(idIncontri);
+            using (OdbcCommand cmd = conn.CreateCommand())
+            {
+                cmd.CommandText = "SELECT idsquadra, tot, ruolo, modportiere, modattacco, moddifesa, voto, modm1pers, modm2pers, modm3pers FROM tabellino WHERE idincontro IN " + filtro + " ORDER BY idsquadra";
+                using (OdbcDataReader rea = cmd.ExecuteReader())
+                {
+                    Dictionary<int, Tabellino> mapTabellini = new Dictionary<int, Tabellino>();
+                    Boolean saltaGiornata = true;
+                    while (rea.Read())
+                    {
+                        Tabellino tab = new Tabellino();
+                        string votistring = rea.GetString(2);
+                        if (votistring != null)
+                        {
+                            tab.voti = votistring.Split('%');
+                            saltaGiornata = false;
+                        }
+                        string ruolistring = rea.GetString(3);
+                        if (ruolistring != null)
+                        {
+                            tab.ruoli = ruolistring.Split('%');
+                            saltaGiornata = false;
+                        }
+                        tab.modPortiere = rea.GetDouble(4);
+                        tab.modAttacco = rea.GetDouble(5);
+                        tab.modDifesa = rea.GetDouble(6);
 
-			    List<Fascia> listaFasce = new ArrayList<>();
-			    while (rs.next()){
-				    Fascia fascia = new Fascia();
-				    fascia.valore = rs.getDouble(1);
-				    fascia.min = rs.getDouble(2);
-				    fascia.max = rs.getDouble(3);
-				    listaFasce.add(fascia);
-			    }
-			    return listaFasce;
-		    } catch (SQLException e) {
-			    logger.severe(e.getMessage());
-			    throw new PluginException("");
-		    }
-	    }
+                        string votipuristring = rea.GetString(7);
+                        if (votipuristring != null)
+                        {
+                            tab.votipuri = votipuristring.Split('%');
+                            saltaGiornata = false;
+                        }
 
+                        tab.modPers1 = rea.GetDouble(8);
+                        tab.modPers2 = rea.GetDouble(9);
+                        tab.modPers3 = rea.GetDouble(10);
+                        mapTabellini.Add(rea.GetInt32(1), tab);
+                    }
+                    if (saltaGiornata)
+                    {
+                        throw new InvalidGiornataException();
+                    }
+                    return mapTabellini;
+                }
+            }
+        }
 
+        public List<Fascia> getFasceConversioneGol(string idCompetizione)
+        {
+            //logger.info("Estrazione fasce gol");
+            return getDatiDaFasceByQuery("SELECT f.valore, f.min, f.max FROM tabellagol g, fascia f WHERE g.idCompetizione = " + idCompetizione + " AND g.idFascia=f.id");
+        }
+
+        public List<Fascia> getFasceModificatoreDifesa(string idCompetizione)
+        {
+            //logger.info("Estrazione fasce modificatore difesa");
+            return getDatiDaFasceByQuery("SELECT f.valore, f.min, f.max FROM tabelladifesa d, fascia f WHERE d.idcompetizione = " + idCompetizione + " AND d.idfascia=f.id");
+        }
+
+        public List<Fascia> getContributoNumeroDifensoriModificatoreDifesa(string idCompetizione)
+        {
+            //logger.info("Estrazione contributo numero difensori per modificatore difesa");
+            return getDatiDaFasceByQuery("SELECT f.valore, f.min, f.max FROM tabellanumdifensori d, fascia f WHERE d.idcompetizione = " + idCompetizione + " AND d.idfascia=f.id");
+        }
+
+        public List<Fascia> getFasceModificatoreCentrocampo(string idCompetizione)
+        {
+            //logger.info("Estrazione fasce modifcatore centrocampo");
+            return getDatiDaFasceByQuery("SELECT f.valore, f.min, f.max FROM tabellacentrocampodiffe d, fascia f WHERE d.idcompetizione = " + idCompetizione + " AND d.idfascia=f.id");
+        }
+
+        private List<Fascia> getDatiDaFasceByQuery(string query)
+        {
+            using (OdbcCommand cmd = conn.CreateCommand())
+            {
+                cmd.CommandText = query;
+                using (OdbcDataReader rea = cmd.ExecuteReader())
+                {
+                    List<Fascia> listaFasce = new List<Fascia>();
+                    while (rea.Read())
+                    {
+                        Fascia fascia = new Fascia();
+                        fascia.valore = rea.GetDouble(1);
+                        fascia.min = rea.GetDouble(2);
+                        fascia.max = rea.GetDouble(3);
+                        listaFasce.Add(fascia);
+                    }
+                    return listaFasce;
+                }
+            }
+        }
+
+        private string generaFilter(List<string> listaItems)
+        {
+            string res = "(" + listaItems[0];
+            foreach (var item in listaItems)
+            {
+                res += "," + item;
+            }
+            res += ")";
+            return res;
+        }
     }
 }

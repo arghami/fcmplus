@@ -1,4 +1,4 @@
-﻿using fcm.entity;
+﻿using bridge.model;
 using System;
 using System.Data.Odbc;
 

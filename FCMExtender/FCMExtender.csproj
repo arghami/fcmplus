@@ -51,7 +51,7 @@
     <Compile Include="EnhancedIncontro.cs" />
     <Compile Include="FCMExtender.cs" />
     <Compile Include="fcm\calcolatore\CalcoliHelper.cs" />
-    <Compile Include="fcm\dao\TabellinoDAO.cs" />
+    <Compile Include="fcm\exception\InvalidGiornataException.cs" />
     <Compile Include="fcm\entity\TabellinoWrapper.cs" />
     <Compile Include="fcm\model\Fascia.cs" />
     <Compile Include="fcm\model\Giocatore.cs" />

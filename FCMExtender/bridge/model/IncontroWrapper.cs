@@ -2,7 +2,7 @@
 using Jurassic;
 using Jurassic.Library;
 
-namespace main
+namespace bridge.model
 {
     public class IncontroWrapper : ObjectInstance
     {
