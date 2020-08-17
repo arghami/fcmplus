@@ -15,7 +15,7 @@ namespace math.utils
         public static double parseDouble(string s)
         {
             double ret;
-            double.TryParse(s, NumberStyles.Number, CultureInfo.CreateSpecificCulture ("en-US"), out ret);
+            double.TryParse(s.Replace(",", "."), NumberStyles.Number, CultureInfo.CreateSpecificCulture ("en-US"), out ret);
             return ret;
         }
     }

@@ -44,8 +44,11 @@ namespace fcm.calcolatore
             }
             match.squadra1.fattoreCampo = esisteFattoreCampo ? regole.fattoreCampo : 0;
 
-            squadraJ.parziale = sum11(tabellinoJ.voti);
-            squadraK.parziale = sum11(tabellinoK.voti);
+            gestisciInferiorita(tabellinoJ.giocatori);
+            gestisciInferiorita(tabellinoK.giocatori);
+
+            squadraJ.parziale = sum11(tabellinoJ.giocatori);
+            squadraK.parziale = sum11(tabellinoK.giocatori);
 
             //i modificatori portiere rimangono inalterati. Li prelevo dal relativo tabellino
             if (regole.regolaPortiere)
@@ -96,14 +99,14 @@ namespace fcm.calcolatore
 
 
             //bonus moduli
-            String moduloJ = calcModulo(tabellinoJ.ruoli);
+            String moduloJ = calcModulo(tabellinoJ.giocatori);
             if (regole.moduli.ContainsKey(moduloJ) && regole.moduli[moduloJ] != null)
             {
                 squadraJ.modModulo += regole.moduli[moduloJ].modif;
                 squadraK.modModulo += regole.moduli[moduloJ].modifAvv;
             }
 
-            String moduloK = calcModulo(tabellinoK.ruoli);
+            String moduloK = calcModulo(tabellinoK.giocatori);
             if (regole.moduli.ContainsKey(moduloK) && regole.moduli[moduloK] != null)
             {
                 squadraK.modModulo += regole.moduli[moduloK].modif;
@@ -117,12 +120,12 @@ namespace fcm.calcolatore
             return match;
         }
 
-        private double sum11(String[] strings)
+        private double sum11(Giocatore[] giocatori)
         {
             double sum = 0;
             for (int i = 0; i < 11; i++)
             {
-                sum += NumParser.parseDouble(strings[i].Replace(',', '.'));
+                sum += NumParser.parseDouble(giocatori[i].voto.Replace(',', '.'));
             }
             return sum;
         }
@@ -133,11 +136,12 @@ namespace fcm.calcolatore
             int numDif = 0;
             for (int x = 0; x < 11; x++)
             {
-                if (tab.ruoli[x].Equals("2") || tab.ruoli[x].Equals("6"))
+                Giocatore gio = tab.giocatori[x];
+                if (gio.ruolo.Equals("2") || gio.ruolo.Equals("6"))
                 {
-                    totDif += NumParser.parseDouble(tab.votipuri[x].Replace(',', '.'));
+                    totDif += NumParser.parseDouble(gio.votoPuro.Replace(',', '.'));
                     numDif++;
-                    if (NumParser.parseDouble(tab.votipuri[x].Replace(',', '.')) == 0)
+                    if (NumParser.parseDouble(gio.votoPuro.Replace(',', '.')) == 0)
                     {
                         if (regole.regolaDifesaVU)
                         {
@@ -172,11 +176,12 @@ namespace fcm.calcolatore
             int numcent = 0;
             for (int x = 0; x < 11; x++)
             {
-                if (tabJ.ruoli[x].Equals("3") || tabJ.ruoli[x].Equals("7"))
+                Giocatore gio = tabJ.giocatori[x];
+                if (gio.ruolo.Equals("3") || gio.ruolo.Equals("7"))
                 {
-                    if (NumParser.parseDouble(tabJ.votipuri[x].Replace(',', '.')) > 0)
+                    if (NumParser.parseDouble(gio.votoPuro.Replace(',', '.')) > 0)
                     {
-                        totCent += NumParser.parseDouble(tabJ.votipuri[x].Replace(',', '.'));
+                        totCent += NumParser.parseDouble(gio.votoPuro.Replace(',', '.'));
                         numcent++;
                     }
                 }
@@ -203,22 +208,36 @@ namespace fcm.calcolatore
             return new Fascia();
         }
 
-        private static String calcModulo(String[] ruoli)
+        private static void gestisciInferiorita(Giocatore[] giocatori)
+        {
+            string prevRuolo = "2";
+            for (int x = 1; x < 11; x++)
+            {
+                if (giocatori[x].ruolo.Equals("0"))
+                {
+                    giocatori[x].ruolo = prevRuolo;
+                }
+                prevRuolo = giocatori[x].ruolo;
+            }
+        }
+
+        private static String calcModulo(Giocatore[] giocatori)
         {
             int dif = 0;
             int cen = 0;
             int att = 0;
             for (int x = 0; x < 11; x++)
             {
-                if (ruoli[x].Equals("2") || ruoli[x].Equals("6"))
+                string ruolo = giocatori[x].ruolo;
+                if (ruolo.Equals("2") || ruolo.Equals("6"))
                 {
                     dif++;
                 }
-                if (ruoli[x].Equals("3") || ruoli[x].Equals("7"))
+                if (ruolo.Equals("3") || ruolo.Equals("7"))
                 {
                     cen++;
                 }
-                if (ruoli[x].Equals("4") || ruoli[x].Equals("8"))
+                if (ruolo.Equals("4") || ruolo.Equals("8"))
                 {
                     att++;
                 }

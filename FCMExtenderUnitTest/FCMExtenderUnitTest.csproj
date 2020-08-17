@@ -48,7 +48,9 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="EnhancerTest.cs" />
     <Compile Include="CalcoliHelperTest.cs" />
+    <Compile Include="DownloaderTest.cs" />
     <Compile Include="FcmDaoTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

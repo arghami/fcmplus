@@ -3,10 +3,8 @@ namespace fcm.model
 
     public class Tabellino
     {
-        public string[] voti;
-        public string[] votipuri;
-        public string[] ruoli;
-        public string[] lista;
+        public int giornata;
+        public Giocatore[] giocatori;
         public double modPortiere;
         public double modAttacco;
         public double modDifesa;

@@ -1,10 +1,10 @@
-﻿using main;
+﻿using plus.enhancer;
 using System;
 using System.Windows.Forms;
 
 namespace mainform
 {
-    static class Program
+    static class Launcher
     {
         /// <summary>
         /// The main entry point for the application.
@@ -12,10 +12,9 @@ namespace mainform
         [STAThread]
         static void Main()
         {
-            FCMExtender.pippo(new string[0]);
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Form1());
+            Application.Run(new WelcomeUI());
         }
     }
 }

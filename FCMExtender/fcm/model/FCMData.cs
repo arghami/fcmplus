@@ -5,10 +5,13 @@ namespace fcm.model
     public class FCMData
     {
         public int idGiocatore;
+        public int codiceFCM;
         public int giornata;
+        public int golfatti;
         public int golfatti1;
         public int golfatti2;
         public int golfatti3;
+        public int golfattisurigore;
         public int golfattisurigore1;
         public int golfattisurigore2;
         public int golfattisurigore3;
@@ -20,6 +23,7 @@ namespace fcm.model
         public double valoreSpeciale;
         public int rigsba;
         public int rigpar;
+        public int autogol;
         public int autogol1;
         public int autogol2;
         public int autogol3;
@@ -28,5 +32,6 @@ namespace fcm.model
         public int assist;
         public Boolean amm;
         public Boolean esp;
+        public DateTime dataDiNascita;
     }
 }

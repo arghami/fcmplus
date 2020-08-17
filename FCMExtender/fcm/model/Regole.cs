@@ -1,4 +1,4 @@
-using main;
+using plus.enhancer;
 using System;
 using System.Collections.Generic;
 using System.Data.Odbc;
@@ -35,6 +35,7 @@ namespace fcm.model
         public double VUCentrocampista = 0.0;
         public Boolean regolaDifesaVU = false;
         public double VUDifensore = 0.0;
+        public int usaTabellino = 0;
         public Dictionary<string, Modulo> moduli = new Dictionary<string, Modulo>();
         public Regole(OdbcConnection conn, string compSel)
         {
@@ -45,7 +46,7 @@ namespace fcm.model
                     "usaspeciale2, usaspeciale3, regolaattacco, regoladelta3, regolamin59," +
                     "regolaDiff4Valore, regolaDiff10Valore, regolaMin60Valore, regolaMin60Delta, regolaDelta3Valore, " +
                     "regolaMin59Valore, regolaMin59Delta, regolaMin59Almeno, VUCentrocampista, regolaDifesaVU," +
-                    "VUDifensore FROM competizione WHERE id = " + compSel;
+                    "VUDifensore, usatabellino FROM competizione WHERE id = " + compSel;
                 using (OdbcDataReader rea = cmd.ExecuteReader())
                 {
                     while (rea.Read())
@@ -76,6 +77,7 @@ namespace fcm.model
                         VUCentrocampista = rea.GetDouble(23);
                         regolaDifesaVU = rea.GetBoolean(24);
                         VUDifensore = rea.GetDouble(25);
+                        usaTabellino = rea.GetInt32(26);
 
                         /*FCMExtender.log("puntiPerVittoria: " + puntiPerVittoria);
                         FCMExtender.log("fattoreCampo: " + fattoreCampo);

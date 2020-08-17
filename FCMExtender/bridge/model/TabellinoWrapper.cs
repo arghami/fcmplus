@@ -2,61 +2,49 @@
 using Jurassic;
 using Jurassic.Library;
 using math.utils;
+using fcm.model;
 
 namespace bridge.model
 {
     public class TabellinoWrapper : ObjectInstance
     {
-        public const string IDIncontro = "IDIncontro";
-        public const string IDSquadra = "IDSquadra";
-        public const string IDLega = "IDLega";
-        public const string Ruolo = "Ruolo";
-        public const string Voto = "Voto";
-        public const string Modif = "Modif";
-        public const string Tot = "Tot";
-        public const string ParzialeSquadra = "ParzialeSquadra";
-        public const string FattoreCampo = "FattoreCampo";
-        public const string ModPortiere = "ModPortiere";
-        public const string ModDifesa = "ModDifesa";
-        public const string ModCentrocampo = "ModCentrocampo";
-        public const string ModAttacco = "ModAttacco";
-        public const string ModModulo = "ModModulo";
         public const string ModM1Pers = "ModM1Pers";
         public const string ModM2Pers = "ModM2Pers";
         public const string ModM3Pers = "ModM3Pers";
-        public const string TotaleSquadra = "TotaleSquadra";
-        public const string Gol = "Gol";
         public const string Formazione = "Formazione";
-        public const string IDGirone = "IDGirone";
 
-        public TabellinoWrapper(ScriptEngine engine)
+        public TabellinoWrapper(ScriptEngine engine, Tabellino tab)
             : base(engine)
         {
-            
-        }
-
-        public void build(ScriptEngine engine, OdbcDataReader rea)
-        {
-            for (int i = 0; i < rea.FieldCount; i++)
-            {
-                set(rea.GetName(i), rea[i]);
-            }
-            buildListaGiocatori(engine);
-        }
-
-        private void buildListaGiocatori(ScriptEngine engine)
-        {
-            string[] ruoli = ((string)get(Ruolo)).Split('%');
-            string[] voti = ((string)get(Voto)).Split('%');
-            string[] modif = ((string)get(Modif)).Split('%');
             ArrayInstance form = engine.Array.Construct();
-            
-            for (int i=0; i<ruoli.Length; i++)
+
+            for (int i = 0; i < tab.giocatori.Length; i++)
             {
+                Giocatore gio = tab.giocatori[i];
                 ObjectInstance gioc = engine.Object.Construct();
-                gioc["ruolo"] = NumParser.parseInt(ruoli[i]);
-                gioc["voto"] = NumParser.parseDouble(voti[i]);
-                gioc["modif"] = NumParser.parseDouble(modif[i]);
+                //anagrafici
+                gioc["id"] = NumParser.parseInt(gio.idGiocatore);
+                gioc["codiceFCM"] = gio.fcmData.codiceFCM;
+                System.DateTime d = gio.fcmData.dataDiNascita;
+                gioc["dataDiNascita"] = engine.Date.Construct(d.Year, d.Month, d.Day);
+                //da tabellino
+                gioc["ruolo"] = NumParser.parseInt(gio.ruolo);
+                gioc["voto"] = NumParser.parseDouble(gio.votoPuro);
+                gioc["modif"] = NumParser.parseDouble(gio.voto) - NumParser.parseDouble(gio.votoPuro);
+                //da archivio voti
+                gioc["ammonito"] = gio.fcmData.amm;
+                gioc["espulso"] = gio.fcmData.esp;
+                gioc["assist"] = gio.fcmData.assist;
+                gioc["golfatti"] = gio.fcmData.golfatti;
+                gioc["golfattisurigore"] = gio.fcmData.golfattisurigore;
+                gioc["golsubiti"] = gio.fcmData.golsubiti;
+                gioc["golsubitisurigore"] = gio.fcmData.golsubitisurigore;
+                gioc["golvittoria"] = gio.fcmData.golvittoria;
+                gioc["golpareggio"] = gio.fcmData.golpareggio;
+                gioc["rigoriparati"] = gio.fcmData.rigpar;
+                gioc["valoreSpeciale"] = gio.fcmData.valoreSpeciale;
+                gioc["rigorisbagliati"] = gio.fcmData.rigsba;
+                gioc["autogol"] = gio.fcmData.autogol;
                 ArrayInstance.Push(form, gioc);
             }
 

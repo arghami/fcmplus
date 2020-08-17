@@ -1,6 +1,7 @@
 
 using fcm.exception;
 using fcm.model;
+using math.utils;
 using System;
 using System.Collections.Generic;
 using System.Data.Odbc;
@@ -53,13 +54,61 @@ namespace fcm.dao
                     List<string> girs = new List<string>();
                     while (rea.Read())
                     {
-                        string girName = rea.GetString(1);
-                        girName = girName != null ? girName : "Senza Nome";
-                        girs.Add(rea.GetString(0) + " - " + girName);
+                        string girName = "Senza Nome";
+                        try
+                        {
+                            girName = rea.GetString(1);
+                        }
+                        catch (Exception e) { }
+                        girs.Add(rea.GetInt32(0) + " - " + girName);
                     }
                     return girs.ToArray();
                 }
             }
+        }
+
+        public int getUltimaGiornata(string competizione)
+        {
+            //logger.info("Estrazione dell'ultima giornata");
+            using (OdbcCommand cmd = conn.CreateCommand())
+            {
+                cmd.CommandText = "select max(giornatadia) from incontro where giocato = 1 and idgirone in (select id from girone where idcompetizione = " + competizione+")";
+                using (OdbcDataReader rea = cmd.ExecuteReader())
+                {
+                    if (rea.Read())
+                    {
+                        try
+                        {
+                            return rea.GetInt32(0);
+                        }
+                        catch (Exception e) { }
+                    }
+                    return -1;
+                }
+            }
+
+        }
+
+        public int getMassimaGiornata(string competizione)
+        {
+            //logger.info("Estrazione della prossima giornata");
+            using (OdbcCommand cmd = conn.CreateCommand())
+            {
+                cmd.CommandText = "select max(giornatadia) from incontro where idgirone in (select id from girone where idcompetizione = " + competizione + ")";
+                using (OdbcDataReader rea = cmd.ExecuteReader())
+                {
+                    if (rea.Read())
+                    {
+                        try
+                        {
+                            return rea.GetInt32(0);
+                        }
+                        catch (Exception e) { }
+                    }
+                    return -1;
+                }
+            }
+
         }
 
         public Dictionary<int, string> getSquadreGirone(string idGirone)
@@ -124,12 +173,12 @@ namespace fcm.dao
             }
         }
 
-        public List<Incontro> getIncontri(string idGirone, int idGiornata)
+        public List<Incontro> getIncontri(string idGirone, int giornataDiA)
         {
             //logger.info("Estrazione incontri");
             using (OdbcCommand cmd = conn.CreateCommand())
             {
-                cmd.CommandText = "SELECT id, idcasa, idfuori, idtipo, parzcasa, parzfuori, totcasa, totfuori, golcasa, golfuori FROM incontro WHERE idgirone = " + idGirone + " AND idGiornata = " + idGiornata;
+                cmd.CommandText = "SELECT id, idcasa, idfuori, idtipo, parzcasa, parzfuori, totcasa, totfuori, golcasa, golfuori FROM incontro WHERE idgirone = " + idGirone + " AND giornataDiA = " + giornataDiA;
                 using (OdbcDataReader rea = cmd.ExecuteReader())
                 {
 
@@ -163,7 +212,11 @@ namespace fcm.dao
             string filtro = generaFilter(idIncontri);
             using (OdbcCommand cmd = conn.CreateCommand())
             {
-                cmd.CommandText = "SELECT idsquadra, tot, ruolo, modportiere, modattacco, moddifesa, voto, lista, modm1pers, modm2pers, modm3pers FROM tabellino WHERE idincontro IN " + filtro + " ORDER BY idsquadra";
+                cmd.CommandText = "SELECT t.idsquadra, t.tot, t.ruolo, t.modportiere, t.modattacco, t.moddifesa, " +
+                    " t.voto, t.lista, t.modm1pers, t.modm2pers, t.modm3pers, i.giornataDiA " +
+                    " FROM tabellino t, incontro i " +
+                    " WHERE t.idIncontro=i.id " +
+                    " AND t.idincontro IN " + filtro + " ORDER BY t.idsquadra";
                 using (OdbcDataReader rea = cmd.ExecuteReader())
                 {
                     Dictionary<int, Tabellino> mapTabellini = new Dictionary<int, Tabellino>();
@@ -172,15 +225,19 @@ namespace fcm.dao
                     {
                         Tabellino tab = new Tabellino();
                         string votistring = rea.GetString(1);
+                        string[] votiArray = null;
+                        string[] ruoliArray = null;
+                        string[] votiPuriArray = null;
+                        string[] listaArray = null;
                         if (votistring != null)
                         {
-                            tab.voti = votistring.Split('%');
+                            votiArray = votistring.Split('%');
                             saltaGiornata = false;
                         }
                         string ruolistring = rea.GetString(2);
                         if (ruolistring != null)
                         {
-                            tab.ruoli = ruolistring.Split('%');
+                            ruoliArray = ruolistring.Split('%');
                             saltaGiornata = false;
                         }
                         tab.modPortiere = rea.GetDouble(3);
@@ -190,20 +247,23 @@ namespace fcm.dao
                         string votipuristring = rea.GetString(6);
                         if (votipuristring != null)
                         {
-                            tab.votipuri = votipuristring.Split('%');
+                            votiPuriArray = votipuristring.Split('%');
                             saltaGiornata = false;
                         }
 
                         string listastring = rea.GetString(7);
                         if (listastring != null)
                         {
-                            tab.lista = listastring.Split('%'); //TODO decidere dove gestire l'acquisizione del dettaglio voti
+                            listaArray = listastring.Split('%');
                             saltaGiornata = false;
                         }
+                        
+                        tab.giocatori = creaGiocatori(votiArray, ruoliArray, votiPuriArray, listaArray);
 
                         tab.modPers1 = rea.GetDouble(8);
                         tab.modPers2 = rea.GetDouble(9);
                         tab.modPers3 = rea.GetDouble(10);
+                        tab.giornata = rea.GetInt32(11);
                         mapTabellini.Add(rea.GetInt32(0), tab);
                     }
                     if (saltaGiornata)
@@ -215,10 +275,86 @@ namespace fcm.dao
             }
         }
 
+
+
+        public void aggiungiDettagliGiocatoriATabellino(Tabellino tabellino, int regoleUsaTabellino)
+        {
+            //logger.info("Estrazione tabellini");
+            List<int> idGiocatori = new List<int>();
+            foreach (var gio in tabellino.giocatori)
+            {
+                idGiocatori.Add(NumParser.parseInt(gio.idGiocatore));
+            }
+
+            Dictionary<int, FCMData> fcmData = getGiocaIn(idGiocatori, tabellino.giornata);
+            foreach (var gio in tabellino.giocatori)
+            {
+                if (NumParser.parseInt(gio.idGiocatore) > 0)
+                {
+                    FCMData data = fcmData[NumParser.parseInt(gio.idGiocatore)];
+                    settaMaggioranzaTabellino(data, regoleUsaTabellino);
+                    gio.fcmData = data;
+                }
+            }
+        }
+
+        private void settaMaggioranzaTabellino(FCMData data, int regoleUsaTabellino)
+        {
+            switch (regoleUsaTabellino)
+            {
+                case 1:
+                    data.autogol = data.autogol1;
+                    data.golfatti = data.golfatti1;
+                    data.golfattisurigore = data.golfattisurigore1;
+                    break;
+                case 2:
+                    data.autogol = data.autogol2;
+                    data.golfatti = data.golfatti2;
+                    data.golfattisurigore = data.golfattisurigore2;
+                    break;
+                case 3:
+                    data.autogol = data.autogol3;
+                    data.golfatti = data.golfatti3;
+                    data.golfattisurigore = data.golfattisurigore3;
+                    break;
+                case 4:
+                    data.autogol = maggioranza (data.autogol1, data.autogol2, data.autogol3);
+                    data.golfatti = maggioranza(data.golfatti1, data.golfatti2, data.golfatti3);
+                    data.golfattisurigore = maggioranza(data.golfattisurigore1, data.golfattisurigore2, data.golfattisurigore3);
+                    break;
+            }
+        }
+
+        private int maggioranza(int a, int b, int c)
+        {
+            if (a == b && a == c) return a; //tutti uguali, restituisco uno qualunque
+            if (a == b) return a; //c è in minoranza, restituisco a (o b)
+            if (a == c) return a; //b è in minoranza, restituisco a (o c)
+            if (b == c) return b; //a è in minoranza, restituisco b (o c)
+            return a; //sono tutti diversi, restituisco a (SPERO VIVAMENTE NON CAPITI MAI)
+        }
+
+        private Giocatore[] creaGiocatori(string[] votiArray, string[] ruoliArray, string[] votiPuriArray, string[] listaArray)
+        {
+            if (votiArray!=null && ruoliArray!=null && votiPuriArray!=null && listaArray != null)
+            {
+                Giocatore[] gio = new Giocatore[votiArray.Length];
+                for (int i=0; i< votiArray.Length; i++)
+                {
+                    gio[i] = new Giocatore();
+                    gio[i].idGiocatore = listaArray[i];
+                    gio[i].voto = votiArray[i];
+                    gio[i].ruolo = ruoliArray[i];
+                    gio[i].votoPuro = votiPuriArray[i];
+                }
+                return gio;
+            }
+            return null;
+        }
+
         public Dictionary<int, FCMData> getGiocaIn(List<int> idGiocatori, int giornata)
         {
             //logger.info("Estrazione squadre iscritte");
-            int cnt = 0;
             string filtro = generaFilter(idGiocatori);
             using (OdbcCommand cmd = conn.CreateCommand())
             {
@@ -229,8 +365,11 @@ namespace fcm.dao
                     " p.voto1, p.voto2, p.voto3, p.valoreSpeciale, " +
                     " p.rigsba, p.rigpar, p.autogol1, p.autogol2, p.autogol3, " +
                     " p.golsubiti, p.golsubitisurigore, p.assist, " +
-                    " p.amm, p.esp " + //questi sono booleani
-                    " FROM giocaIn g, punteggio p where g.idPunteggio=p.id " +
+                    " p.amm, p.esp, " + //questi sono booleani
+                    " ar.codicegazza, ar.dataDiNascita " +
+                    " FROM giocaIn g, punteggio p, GIOCATOREA ar " +
+                    " where g.idPunteggio=p.id " +
+                    " AND g.idGiocatore=ar.id " +
                     " AND g.giornata = " + giornata +
                     " AND g.idGiocatore in " + filtro;
                 using (OdbcDataReader rea = cmd.ExecuteReader())
@@ -262,6 +401,8 @@ namespace fcm.dao
                         data.assist = rea.GetInt32(21);
                         data.amm = rea.GetBoolean(22);
                         data.esp = rea.GetBoolean(23);
+                        data.codiceFCM = rea.GetInt32(24);
+                        data.dataDiNascita = rea.GetDate(25);
                         datiGiocatori.Add(data.idGiocatore, data);
                     }
                     return datiGiocatori;
@@ -304,16 +445,17 @@ namespace fcm.dao
         {
             using (OdbcCommand cmd = conn.CreateCommand())
             {
-                cmd.CommandText = "update tabellino set parzialeSquadra=?, totaleSquadra=?, gol=? ";
+                cmd.CommandText = "update tabellino set ParzialeSquadra=?, TotaleSquadra=?, Gol=? ";
                 cmd.Parameters.AddWithValue("@ParzialeSquadra", squadra.parziale);
                 cmd.Parameters.AddWithValue("@TotaleSquadra", squadra.getTotale());
                 cmd.Parameters.AddWithValue("@Gol", squadra.numeroGol);
                 for (int i = 0; i < 3; i++)
                 {
+                    int i1Based = i + 1;
                     if (modPers[i])
                     {
-                        cmd.CommandText += ",modm" + i + "pers=? , modm" + i + "persesiste=true ";
-                        cmd.Parameters.AddWithValue("@modm" + i + "pers", getModPersValue(i, squadra));
+                        cmd.CommandText += ",modm" + i1Based + "pers=? , modm" + i1Based + "persesiste=true ";
+                        cmd.Parameters.AddWithValue("@modm" + i1Based + "pers", getModPersValue(i, squadra));
                     }
                 }
                 cmd.CommandText += " where IDIncontro = ? and IDSquadra = ?";
@@ -327,7 +469,7 @@ namespace fcm.dao
         {
             using (OdbcCommand cmd = conn.CreateCommand())
             {
-                cmd.CommandText = "update incontro set parzCasa=?, parzFuori=?, totCasa=?, totFuori=?, golCasa?, golFuori=? ";
+                cmd.CommandText = "update incontro set ParzCasa=?, ParzFuori=?, TotCasa=?, TotFuori=?, GolCasa=?, GolFuori=? ";
                 cmd.Parameters.AddWithValue("@ParzCasa", match.squadra1.parziale);
                 cmd.Parameters.AddWithValue("@ParzFuori", match.squadra2.parziale);
                 cmd.Parameters.AddWithValue("@TotCasa", match.squadra1.getTotale());
@@ -336,14 +478,15 @@ namespace fcm.dao
                 cmd.Parameters.AddWithValue("@GolFuori", match.squadra2.numeroGol);
                 for (int i = 0; i < 3; i++)
                 {
+                    int i1Based = i + 1;
                     if (modPers[i])
                     {
-                        cmd.CommandText += ",m" + i + "Casa=? , m" + i + "Fuori=? ";
-                        cmd.Parameters.AddWithValue("@M" + i + "Casa", getModPersValue(i, match.squadra1));
-                        cmd.Parameters.AddWithValue("@M" + i + "Fuori", getModPersValue(i, match.squadra2));
+                        cmd.CommandText += " ,M" + i1Based + "Casa=? , M" + i1Based + "Fuori=? ";
+                        cmd.Parameters.AddWithValue("@M" + i1Based + "Casa", getModPersValue(i, match.squadra1));
+                        cmd.Parameters.AddWithValue("@M" + i1Based + "Fuori", getModPersValue(i, match.squadra2));
                     }
                 }
-                cmd.CommandText += "where id=?";
+                cmd.CommandText += " where ID=? ";
                 cmd.Parameters.AddWithValue("@ID", idIncontro);
                 cmd.ExecuteNonQuery();
             }

@@ -50,29 +50,40 @@
   <ItemGroup>
     <Compile Include="bridge\model\IncontroWrapper.cs" />
     <Compile Include="bridge\model\TabellinoWrapper.cs" />
-    <Compile Include="EnhancedIncontro.cs" />
-    <Compile Include="FCMExtender.cs" />
+    <Compile Include="gui\ConfigData.cs" />
+    <Compile Include="gui\Configuratore.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="gui\Configuratore.Designer.cs">
+      <DependentUpon>Configuratore.cs</DependentUpon>
+    </Compile>
+    <Compile Include="net\downloader\Downloader.cs" />
+    <Compile Include="plus\enhancer\Enhancer.cs" />
     <Compile Include="fcm\calcolatore\CalcoliHelper.cs" />
     <Compile Include="fcm\exception\InvalidGiornataException.cs" />
     <Compile Include="fcm\model\Fascia.cs" />
-    <Compile Include="fcm\model\FCData.cs" />
+    <Compile Include="fcm\model\FCMData.cs" />
     <Compile Include="fcm\model\Giocatore.cs" />
     <Compile Include="fcm\model\Incontro.cs" />
     <Compile Include="fcm\model\Match.cs" />
     <Compile Include="fcm\model\Modulo.cs" />
     <Compile Include="fcm\model\Regole.cs" />
     <Compile Include="fcm\model\Tabellino.cs" />
-    <Compile Include="Form1.cs">
+    <Compile Include="utils\logging\Logger.cs" />
+    <Compile Include="gui\WelcomeUI.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Form1.Designer.cs">
-      <DependentUpon>Form1.cs</DependentUpon>
+    <Compile Include="gui\WelcomeUI.Designer.cs">
+      <DependentUpon>WelcomeUI.cs</DependentUpon>
     </Compile>
     <Compile Include="math\utils\NumParser.cs" />
-    <Compile Include="Program.cs" />
+    <Compile Include="Launcher.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <EmbeddedResource Include="Form1.resx">
-      <DependentUpon>Form1.cs</DependentUpon>
+    <EmbeddedResource Include="gui\Configuratore.resx">
+      <DependentUpon>Configuratore.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="gui\WelcomeUI.resx">
+      <DependentUpon>WelcomeUI.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -84,6 +95,7 @@
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
     <None Include="packages.config" />
+    <None Include="Properties\DataSources\FCMExtender.gui.ConfigData.datasource" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
