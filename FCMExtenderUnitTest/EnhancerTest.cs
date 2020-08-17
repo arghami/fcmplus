@@ -49,7 +49,7 @@ namespace FCMExtenderUnitTest
                             fasceGol);
                         Tabellino tabCasa = tabellini[inc.casa];
                         Tabellino tabTrasferta = tabellini[inc.trasferta];
-                        Enhancer.enhanceIncontro(inc, tabCasa, tabTrasferta);
+                        Enhancer.enhanceIncontro(inc, tabCasa, tabTrasferta, null);
                         Match match = helper.calcolaMatch(tabCasa, tabTrasferta, true, true);
                         Assert.AreEqual(tabCasa.modDifesa, match.squadra1.modSpeciale1);
                         Assert.AreEqual(tabTrasferta.modDifesa, match.squadra2.modSpeciale1);

@@ -8,9 +8,6 @@ namespace bridge.model
 {
     public class TabellinoWrapper : ObjectInstance
     {
-        public const string ModM1Pers = "ModM1Pers";
-        public const string ModM2Pers = "ModM2Pers";
-        public const string ModM3Pers = "ModM3Pers";
         public const string Formazione = "Formazione";
 
         public TabellinoWrapper(ScriptEngine engine, Tabellino tab)
@@ -27,6 +24,7 @@ namespace bridge.model
                 gioc["codiceFCM"] = gio.fcmData.codiceFCM;
                 System.DateTime d = gio.fcmData.dataDiNascita;
                 gioc["dataDiNascita"] = engine.Date.Construct(d.Year, d.Month, d.Day);
+                gioc["primavera"] = gio.fcmData.primavera;
                 //da tabellino
                 gioc["ruolo"] = NumParser.parseInt(gio.ruolo);
                 gioc["voto"] = NumParser.parseDouble(gio.votoPuro);

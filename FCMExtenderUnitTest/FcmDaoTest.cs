@@ -36,7 +36,7 @@ namespace FCMExtenderUnitTest
                 List<int> idGiocatori = new List<int>();
                 idGiocatori.Add(59);
 
-                Dictionary<int, FCMData> data = dao.getGiocaIn(idGiocatori, 34);
+                Dictionary<int, FCMData> data = dao.getGiocaIn(1, idGiocatori, 34);
                 Assert.IsTrue(data.Count==1);
                 FCMData dat = data[59];
                 Assert.AreEqual(7, dat.voto1);
@@ -79,7 +79,7 @@ namespace FCMExtenderUnitTest
                             fasceGol);
                         Tabellino tabCasa = tabellini[inc.casa];
                         Tabellino tabTrasferta = tabellini[inc.trasferta];
-                        Enhancer.enhanceIncontro(inc, tabCasa, tabTrasferta);
+                        Enhancer.enhanceIncontro(inc, tabCasa, tabTrasferta, null);
                         Match match = helper.calcolaMatch(tabCasa, tabTrasferta, true, true);
                         dao.setDatiIncontro(inc.idIncontro, inc.casa, inc.trasferta, match, new bool[] { true, false, false });
                     }

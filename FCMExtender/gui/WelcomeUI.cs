@@ -1,14 +1,11 @@
 ﻿using fcm.dao;
+using fcm.model;
 using FCMExtender.gui;
 using plus.enhancer;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace mainform
@@ -16,31 +13,10 @@ namespace mainform
     public partial class WelcomeUI : Form
     {
         private string[] listaCompDaDAO;
-        private Boolean configIncompleta;
 
         public WelcomeUI()
         {
             InitializeComponent();
-        }
-
-        private void Form1_Load(object sender, EventArgs e)
-        {
-
-        }
-
-        private void openFileDialog1_FileOk(object sender, CancelEventArgs e)
-        {
-
-        }
-
-        private void button1_Paint(object sender, PaintEventArgs e)
-        {
-
-        }
-
-        private void button1_MouseClick(object sender, MouseEventArgs e)
-        {
-
         }
 
         /// <summary>
@@ -48,7 +24,7 @@ namespace mainform
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void button1_Click(object sender, EventArgs e)
+        private void buttonSfogliaClick(object sender, EventArgs e)
         {
             DialogResult result = openFileDialog.ShowDialog();
             if (result == DialogResult.OK) // Test result.
@@ -57,6 +33,9 @@ namespace mainform
                 textFileFCM.Text = openFileDialog.FileName;
                 //disabilito il bottone di Elabora...
                 buttonElabora.Enabled = false;
+                //nascondo il datagrid del resoconto
+                label1.Visible = false;
+                dataGridView1.Visible = false;
                 //leggo e conservo la lista delle competizioni. Se non ne trovo lancio un alert.
                 using (FcmDao dao = new FcmDao(textFileFCM.Text))
                 {
@@ -65,6 +44,7 @@ namespace mainform
                 if (listaCompDaDAO.Count() > 0)
                 {
                     configuraButton.Enabled = true;
+                    buttonElabora.Enabled = ConfigData.isConfigured(textFileFCM.Text);
                 }
                 else
                 {
@@ -74,27 +54,21 @@ namespace mainform
             }
         }
 
-        private void label2_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void label3_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void openFileDialog1_FileOk_1(object sender, CancelEventArgs e)
-        {
-
-        }
-
         private void buttonElabora_Click(object sender, EventArgs e)
         {
             try
             {
+                label1.Visible = false;
+                dataGridView1.Visible = false;
                 progressBarAvanzamento.Visible = true;
-                Enhancer.enhance(textFileFCM.Text, checkBoxRicalcola.Checked, progressBarAvanzamento);
+                string nomeLega = textFileFCM.Text.Split('/').Last().Split('\\').Last();
+                //leggo la configurazione eventualmente già salvata
+                List<ConfigData> listaConfigurazioni = ConfigData.Deserialize(nomeLega);
+
+                List<ElabResult> elabResultList = Enhancer.enhance(textFileFCM.Text, checkBoxRicalcola.Checked, progressBarAvanzamento, listaConfigurazioni);
+                label1.Visible = true;
+                dataGridView1.Visible = true;
+                dataGridView1.DataSource = elabResultList;
                 MessageBox.Show("Elaborazione completata", "Avviso", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             catch (Exception ex)
@@ -104,28 +78,16 @@ namespace mainform
             progressBarAvanzamento.Visible = false;
         }
 
-        private void label1_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void checkBoxRicalcola_CheckedChanged(object sender, EventArgs e)
-        {
-
-        }
-
         /// <summary>
         /// Scatta alla pressione del tasto "Configurazione"
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void button1_Click_1(object sender, EventArgs e)
+        private void configuraButtonClick(object sender, EventArgs e)
         {
-            string nomeLega = textFileFCM.Text.Split('/').Last().Split('\\').Last();
             //leggo la configurazione eventualmente già salvata
-            List<ConfigData> listaConfigurazioni = ConfigData.Deserialize(nomeLega);
-            //mock
-            List<string> listaModificatori = new List<string>() { "Mod gazza", "Mod capitano" };
+            List<ConfigData> listaConfigurazioni = ConfigData.Deserialize(textFileFCM.Text);
+            List<string> listaModificatori = Enhancer.listModificatoriRegistrati(Enhancer.init());
             //rimuovo i config di modificatori che non sono più presenti
             for (int i=listaConfigurazioni.Count-1; i>=0; i--)
             {
@@ -135,32 +97,46 @@ namespace mainform
                 }
             }
 
-            //reinizializzo il flag configIncompleta
-            configIncompleta = false;
-
             List<string> competizioni = new List<string>();
+            List<Regole> regole = new List<Regole>();
             //scorro le competizioni estratte dal DAO
-            foreach (var comp in listaCompDaDAO)
+            using (FcmDao dao = new FcmDao(textFileFCM.Text))
             {
-                //taglio via la parte dell'id
-                string compPulita = comp.Split('-')[1].Trim();
-                competizioni.Add(compPulita);
-                //scorro i modificatori e controllo se in config esiste una entry per questa coppia competizione/modificatore
-                foreach (var mod in listaModificatori)
+                foreach (var comp in listaCompDaDAO)
                 {
-                    ConfigData data = new ConfigData(compPulita, mod, false, null);
-                    //se non esiste, inserisco una entry di default e traccio che la configurazione è incompleta
-                    if (!listaConfigurazioni.Contains(data))
+                    //taglio via la parte dell'id
+                    string idComp = comp.Split('-')[0].Trim();
+                    string nomeCompetizione = comp.Split('-')[1].Trim();
+                    Regole reg = dao.getRegoleCompetizione(idComp);
+                    competizioni.Add(nomeCompetizione);
+                    regole.Add(reg);
+                    //scorro i modificatori e controllo se in config esiste una entry per questa coppia competizione/modificatore
+                    foreach (var mod in listaModificatori)
                     {
-                        listaConfigurazioni.Add(data);
-                        configIncompleta = true;
+                        ConfigData data = new ConfigData(nomeCompetizione, mod, false, -1);
+                        //se non esiste, inserisco una entry di default e traccio che la configurazione è incompleta
+                        if (!listaConfigurazioni.Contains(data))
+                        {
+                            listaConfigurazioni.Add(data);
+                        }
                     }
                 }
             }
 
             //apro il popup di configurazione
-            Configuratore configuratoreForm = new Configuratore(competizioni, listaConfigurazioni, nomeLega, ()=>buttonElabora.Enabled=true);
+            Configuratore configuratoreForm = new Configuratore(competizioni, listaConfigurazioni, textFileFCM.Text, ()=>buttonElabora.Enabled=true, regole);
             configuratoreForm.ShowDialog();
+        }
+
+        private void dataGridView1_DataBindingComplete(object sender, DataGridViewBindingCompleteEventArgs e)
+        {
+            foreach (DataGridViewRow Myrow in dataGridView1.Rows)
+            {
+                if (!Myrow.Cells[3].Value.Equals(Myrow.Cells[4].Value))
+                {
+                    Myrow.Cells[4].Style.BackColor = Color.Yellow;
+                }
+            }
         }
     }
 }

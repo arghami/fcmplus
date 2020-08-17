@@ -33,5 +33,6 @@ namespace fcm.model
         public Boolean amm;
         public Boolean esp;
         public DateTime dataDiNascita;
+        public Boolean primavera;
     }
 }

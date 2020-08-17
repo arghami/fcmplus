@@ -3,6 +3,9 @@ using fcm.calcolatore;
 using fcm.dao;
 using fcm.exception;
 using fcm.model;
+using FCMExtender.gui;
+using Jurassic;
+using Jurassic.Library;
 using net.downloader;
 using System;
 using System.Collections.Generic;
@@ -15,8 +18,9 @@ namespace plus.enhancer
 {
     public class Enhancer
     {
-        public static void enhance(String filename, bool tutteGiornate, ProgressBar bar)
+        public static List<ElabResult> enhance(String filename, bool tutteGiornate, ProgressBar bar, List<ConfigData> configurazioni)
         {
+            List<ElabResult> elabResultList = new List<ElabResult>();
             //devio la console su file
             using (FileStream fs = new FileStream("log.txt", FileMode.Append))
             {
@@ -29,6 +33,27 @@ namespace plus.enhancer
                     foreach (var comp in competizioni)
                     {
                         string idCompetizione = comp.Split('-')[0].Trim();
+                        string nomeCompetizione = comp.Split('-')[1].Trim();
+                        //filtro solo le configurazioni corrispondenti alla competizione corrente
+                        List<ConfigData> confPerCompetizione = new List<ConfigData>();
+                        bool nessunModConfigurato = true;
+                        foreach (var theConf in configurazioni)
+                        {
+                            if (theConf.competizione.Equals(nomeCompetizione))
+                            {
+                                confPerCompetizione.Add(theConf);
+                                if (theConf.abilitato)
+                                {
+                                    nessunModConfigurato = false;
+                                }
+                            }
+                        }
+                        if (nessunModConfigurato)
+                        {
+                            Logger.log("Nessun modificatore configurato per la competizione "+nomeCompetizione+". Nessun ricalcolo effettuato.");
+                            continue;
+                        }
+                        //calcolo intervallo giornate da processare
                         int firstGio = 1;
                         int lastGio = getUltimaOrMassima(dao, idCompetizione);
                         if (!tutteGiornate)
@@ -76,6 +101,9 @@ namespace plus.enhancer
                                 //per ogni incontro...
                                 foreach (var inc in incontri)
                                 {
+
+                                    inc.competizione = nomeCompetizione;
+                                    inc.giornata = gior;
                                     //carico il tabellino
                                     List<int> idIncontri = new List<int>();
                                     idIncontri.Add(inc.idIncontro);
@@ -85,7 +113,7 @@ namespace plus.enhancer
                                     {
                                         tabellini = dao.getTabellini(idIncontri);
                                     }
-                                    catch (InvalidGiornataException e)
+                                    catch (InvalidGiornataException)
                                     {
                                         continue;
                                     }
@@ -102,12 +130,12 @@ namespace plus.enhancer
                                     Logger.log("Acquisizione dati archivio per l'incontro ");
                                     Tabellino tabCasa = tabellini[inc.casa];
                                     Tabellino tabTrasferta = tabellini[inc.trasferta];
-                                    dao.aggiungiDettagliGiocatoriATabellino(tabCasa, regole.usaTabellino);
-                                    dao.aggiungiDettagliGiocatoriATabellino(tabTrasferta, regole.usaTabellino);
+                                    dao.aggiungiDettagliGiocatoriATabellino(inc.casa, tabCasa, regole.usaTabellino);
+                                    dao.aggiungiDettagliGiocatoriATabellino(inc.trasferta, tabTrasferta, regole.usaTabellino);
 
                                     //applico le regole
                                     Logger.log("Applicazione regole custom ");
-                                    enhanceIncontro(inc, tabCasa, tabTrasferta);
+                                    enhanceIncontro(inc, tabCasa, tabTrasferta, confPerCompetizione);
 
                                     //ricalcolo il match con i modificatori custom applicati
                                     Logger.log("Ricalcolo del match ");
@@ -117,6 +145,18 @@ namespace plus.enhancer
                                     Logger.log("Scrittura sul DB FCM ");
                                     dao.setDatiIncontro(inc.idIncontro, inc.casa, inc.trasferta, match, new bool[] { regole.usaSpeciale1, regole.usaSpeciale2, regole.usaSpeciale3 });
                                     Logger.log("Fine elaborazione incontro id " + inc.idIncontro);
+
+
+                                    //preparo l'output per l'interfaccia grafica
+                                    ElabResult elResult = new ElabResult();
+                                    elResult.competizione = nomeCompetizione;
+                                    elResult.giornata = gior.ToString();
+                                    elResult.incontro = inc.nomeCasa + "-" + inc.nomeFuori;
+                                    elResult.vecchioRisultato = inc.golcasa + "-" + inc.golfuori +
+                                        " (" + inc.totcasa + "-" + inc.totfuori + ")";
+                                    elResult.nuovoRisultato = match.squadra1.numeroGol + "-" + match.squadra2.numeroGol +
+                                        " (" + match.squadra1.getTotale() + "-" + match.squadra2.getTotale() + ")";
+                                    elabResultList.Add(elResult);
                                 }
                             }
                         }
@@ -127,6 +167,7 @@ namespace plus.enhancer
                     }
                 }
             }
+            return elabResultList;
         }
 
         private static int getUltimaOrMassima(FcmDao dao, string idCompetizione)
@@ -139,18 +180,21 @@ namespace plus.enhancer
             return res;
         }
 
-        public static void enhanceIncontro(Incontro inc, Tabellino tabCasa, Tabellino tabFuori)
+        public static void enhanceIncontro(Incontro inc, Tabellino tabCasa, Tabellino tabFuori, List<ConfigData> configurazioni)
         {
             //inizializzo lo script engine
-            var jsEngine = new Jurassic.ScriptEngine();
+            var jsEngine = init();
             jsEngine.SetGlobalValue("console", new Jurassic.Library.FirebugConsole(jsEngine));
 
             //produco il DTO incontro da inviare al javascript
             IncontroWrapper incontro = new IncontroWrapper(jsEngine);
             incontro.setCasa(new TabellinoWrapper(jsEngine, tabCasa));
             incontro.setTrasferta(new TabellinoWrapper(jsEngine, tabFuori));
+            incontro.setGiornata(inc.giornata);
+            incontro.setCompetizione(inc.competizione);
+            incontro.setNomeCasa(inc.nomeCasa);
+            incontro.setNomeTrasferta(inc.nomeFuori);
 
-            jsEngine.SetGlobalValue("incontro", incontro);
 
             //carico ed eseguo prima i js della cartella data, che sono quelli scaricati a runtime
             string basePath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
@@ -159,26 +203,100 @@ namespace plus.enhancer
             {
                 jsEngine.ExecuteFile(fName);
             }
-            //poi carico ed eseguo quelli delle regole
-            filePaths = Directory.GetFiles(basePath + @"\script", "*.js", SearchOption.TopDirectoryOnly);
-            foreach (var fName in filePaths)
+
+            jsEngine.SetGlobalValue("incontro", incontro);
+
+            //azzero nel tabellino solo i modPers ai quali è associato almeno una config
+            foreach (var config in configurazioni)
             {
-                jsEngine.ExecuteFile(fName);
+                if (config.abilitato)
+                {
+                    switch (config.destinazione)
+                    {
+                        case 0:
+                            tabCasa.modPers1 = 0;
+                            tabFuori.modPers1 = 0;
+                            break;
+                        case 1:
+                            tabCasa.modPers2 = 0;
+                            tabFuori.modPers2 = 0;
+                            break;
+                        case 2:
+                            tabCasa.modPers3 = 0;
+                            tabFuori.modPers3 = 0;
+                            break;
+                    }
+                }
             }
 
-            //leggo i dati dei modificatori scritti dal javascript e li inserisco nei tabellini
-            tabCasa.modPers1 = safeDouble(incontro.getCasa().get(TabellinoWrapper.ModM1Pers));
-            tabCasa.modPers2 = safeDouble(incontro.getCasa().get(TabellinoWrapper.ModM2Pers));
-            tabCasa.modPers3 = safeDouble(incontro.getCasa().get(TabellinoWrapper.ModM3Pers));
-            tabFuori.modPers1 = safeDouble(incontro.getTrasferta().get(TabellinoWrapper.ModM1Pers));
-            tabFuori.modPers2 = safeDouble(incontro.getTrasferta().get(TabellinoWrapper.ModM2Pers));
-            tabFuori.modPers3 = safeDouble(incontro.getTrasferta().get(TabellinoWrapper.ModM3Pers));
+            //scorro la configurazione e applico le funzioni, "appendendo" il risultato nel rispettivo modPers
+            foreach (var config in configurazioni)
+            {
+                if (config.abilitato)
+                {
+                    string cust = "_customs['" + config.nome + "']";
+                    jsEngine.Execute(cust+".func.apply(null, [incontro, null])");
+                    //leggo i dati dei modificatori scritti dal javascript e li inserisco nei tabellini
+                    double modCasa = safeDouble(incontro.getCasa().get("Mod"));
+                    double modFuori = safeDouble(incontro.getTrasferta().get("Mod"));
+                    switch (config.destinazione)
+                    {
+                        case 0:
+                            tabCasa.modPers1 += modCasa;
+                            tabFuori.modPers1 += modFuori;
+                            break;
+                        case 1:
+                            tabCasa.modPers2 += modCasa;
+                            tabFuori.modPers2 += modFuori;
+                            break;
+                        case 2:
+                            tabCasa.modPers3 += modCasa;
+                            tabFuori.modPers3 += modFuori;
+                            break;
+                    }
+                    //resetto il parametro di out per la successiva esecuzione
+                    incontro.getCasa().set("Mod",0);
+                    incontro.getTrasferta().set("Mod", 0);
+                }
+            }
+
             Logger.log("Modificatori calcolati: casa.modPers1=" + tabCasa.modPers1);
             Logger.log("Modificatori calcolati: casa.modPers2=" + tabCasa.modPers2);
             Logger.log("Modificatori calcolati: casa.modPers3=" + tabCasa.modPers3);
             Logger.log("Modificatori calcolati: fuori.modPers1=" + tabFuori.modPers1);
             Logger.log("Modificatori calcolati: fuori.modPers2=" + tabFuori.modPers2);
             Logger.log("Modificatori calcolati: fuori.modPers3=" + tabFuori.modPers3);
+        }
+
+        /// <summary>
+        /// Inizializza il jsEngine con le funzioni core
+        /// </summary>
+        /// <returns></returns>
+        public static ScriptEngine init()
+        {
+            ScriptEngine jsEngine = new Jurassic.ScriptEngine();
+            ObjectInstance customs = jsEngine.Object.Construct();
+            jsEngine.SetGlobalValue("_customs", customs);
+            jsEngine.Execute("function register (name, params, func) {_customs[name]={func:func, params:params}} ");
+            
+            string basePath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            string[] filePaths = Directory.GetFiles(basePath + @"\script", "*.js", SearchOption.TopDirectoryOnly);
+            foreach (var fName in filePaths)
+            {
+                jsEngine.ExecuteFile(fName);
+            }
+            return jsEngine;
+        }
+
+        public static List<string> listModificatoriRegistrati(ScriptEngine jsEngine)
+        {
+            List<string> props = new List<string>();
+            ObjectInstance customs = jsEngine.GetGlobalValue<ObjectInstance>("_customs");
+            foreach (var prop in customs.Properties)
+            {
+                props.Add(prop.Name);
+            }
+            return props;
         }
 
         private static double safeDouble(object v)

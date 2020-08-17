@@ -15,6 +15,10 @@ namespace fcm.model
         public double totfuori;
         public int golcasa;
         public int golfuori;
+        public string competizione;
+        public int giornata;
+        public string nomeCasa;
+        public string nomeFuori;
     }
 
 }

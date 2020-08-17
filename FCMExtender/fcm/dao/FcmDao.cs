@@ -178,7 +178,13 @@ namespace fcm.dao
             //logger.info("Estrazione incontri");
             using (OdbcCommand cmd = conn.CreateCommand())
             {
-                cmd.CommandText = "SELECT id, idcasa, idfuori, idtipo, parzcasa, parzfuori, totcasa, totfuori, golcasa, golfuori FROM incontro WHERE idgirone = " + idGirone + " AND giornataDiA = " + giornataDiA;
+                cmd.CommandText = "SELECT i.id, i.idcasa, i.idfuori, i.idtipo, i.parzcasa, i.parzfuori, " +
+                    " i.totcasa, i.totfuori, i.golcasa, i.golfuori, fqc.nome, fqf.nome " +
+                    " FROM incontro i, fantasquadra fqc, fantasquadra fqf " +
+                    " WHERE i.idgirone = " + idGirone +
+                    " AND i.idcasa = fqc.id " +
+                    " AND i.idfuori = fqf.id " +
+                    " AND i.giornataDiA = " + giornataDiA;
                 using (OdbcDataReader rea = cmd.ExecuteReader())
                 {
 
@@ -199,6 +205,8 @@ namespace fcm.dao
                         inc.totfuori = rea.GetDouble(7);
                         inc.golcasa = rea.GetInt32(8);
                         inc.golfuori = rea.GetInt32(9);
+                        inc.nomeCasa = rea.GetString(10);
+                        inc.nomeFuori = rea.GetString(11);
                         listaIncontri.Add(inc);
                     }
                     return listaIncontri;
@@ -214,7 +222,7 @@ namespace fcm.dao
             {
                 cmd.CommandText = "SELECT t.idsquadra, t.tot, t.ruolo, t.modportiere, t.modattacco, t.moddifesa, " +
                     " t.voto, t.lista, t.modm1pers, t.modm2pers, t.modm3pers, i.giornataDiA " +
-                    " FROM tabellino t, incontro i " +
+                    " FROM tabellino t, incontro i  " +
                     " WHERE t.idIncontro=i.id " +
                     " AND t.idincontro IN " + filtro + " ORDER BY t.idsquadra";
                 using (OdbcDataReader rea = cmd.ExecuteReader())
@@ -277,7 +285,7 @@ namespace fcm.dao
 
 
 
-        public void aggiungiDettagliGiocatoriATabellino(Tabellino tabellino, int regoleUsaTabellino)
+        public void aggiungiDettagliGiocatoriATabellino(int idSquadra, Tabellino tabellino, int regoleUsaTabellino)
         {
             //logger.info("Estrazione tabellini");
             List<int> idGiocatori = new List<int>();
@@ -286,7 +294,7 @@ namespace fcm.dao
                 idGiocatori.Add(NumParser.parseInt(gio.idGiocatore));
             }
 
-            Dictionary<int, FCMData> fcmData = getGiocaIn(idGiocatori, tabellino.giornata);
+            Dictionary<int, FCMData> fcmData = getGiocaIn(idSquadra, idGiocatori, tabellino.giornata);
             foreach (var gio in tabellino.giocatori)
             {
                 if (NumParser.parseInt(gio.idGiocatore) > 0)
@@ -352,30 +360,39 @@ namespace fcm.dao
             return null;
         }
 
-        public Dictionary<int, FCMData> getGiocaIn(List<int> idGiocatori, int giornata)
+        public Dictionary<int, FCMData> getGiocaIn(int idSquadra, List<int> idGiocatori, int giornata)
         {
             //logger.info("Estrazione squadre iscritte");
             string filtro = generaFilter(idGiocatori);
             using (OdbcCommand cmd = conn.CreateCommand())
             {
                 Dictionary<int, FCMData> datiGiocatori = new Dictionary<int, FCMData>();
-                cmd.CommandText = "SELECT g.idGiocatore, g.giornata, p.golfatti1, p.golfatti2, p.golfatti3, "+
+                cmd.CommandText = "SELECT g.idGiocatore, g.giornata, p.golfatti1, p.golfatti2, p.golfatti3, " +
                     " p.golfattisurigore1, p.golfattisurigore2, p.golfattisurigore3, " +
                     " p.golvittoria, p.golpareggio, " + //questi sono booleani
                     " p.voto1, p.voto2, p.voto3, p.valoreSpeciale, " +
                     " p.rigsba, p.rigpar, p.autogol1, p.autogol2, p.autogol3, " +
                     " p.golsubiti, p.golsubitisurigore, p.assist, " +
                     " p.amm, p.esp, " + //questi sono booleani
-                    " ar.codicegazza, ar.dataDiNascita " +
-                    " FROM giocaIn g, punteggio p, GIOCATOREA ar " +
+                    " ar.codicegazza, ar.dataDiNascita, t.annoDiContratto " +
+                    " FROM giocaIn g, punteggio p, GIOCATOREA ar, tesserato t " +
                     " where g.idPunteggio=p.id " +
                     " AND g.idGiocatore=ar.id " +
+                    " AND g.idGiocatore=t.idgiocatore " +
                     " AND g.giornata = " + giornata +
-                    " AND g.idGiocatore in " + filtro;
+                    " AND t.idsquadra = " + idSquadra +
+                    " AND g.idGiocatore in " + filtro +
+                    " ORDER BY t.id desc"; //così ho prima i movimenti di mercato più recenti, a parità di giocatore
                 using (OdbcDataReader rea = cmd.ExecuteReader())
                 {
                     while (rea.Read())
                     {
+                        //se ho un duplicato, significa che nella tabellino ho trovato più di un record. Inserisco solo
+                        //il primo che trovo, che è il più recente grazie all'order by impostato
+                        if (datiGiocatori.ContainsKey(rea.GetInt32(0)))
+                        {
+                            continue;
+                        }
                         FCMData data = new FCMData();
                         data.idGiocatore = rea.GetInt32(0);
                         data.giornata = rea.GetInt32(1);
@@ -403,6 +420,7 @@ namespace fcm.dao
                         data.esp = rea.GetBoolean(23);
                         data.codiceFCM = rea.GetInt32(24);
                         data.dataDiNascita = rea.GetDate(25);
+                        data.primavera = rea.GetInt32(26)>100;
                         datiGiocatori.Add(data.idGiocatore, data);
                     }
                     return datiGiocatori;

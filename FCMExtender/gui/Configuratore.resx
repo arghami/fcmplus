@@ -117,4 +117,7 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="textBox1.Text" xml:space="preserve">
+    <value>Questa schermata presenta i modificatori custom rilevati. Abilitare i modificatori desiderati in base alle competizioni e abbinarli a un modificatore speciale di FCM (da abilitare preventivamente all'interno di FCM). Abbinando più elementi allo stesso modificatore FCM, i singoli contributi verranno sommati.</value>
+  </data>
 </root>

@@ -7,10 +7,11 @@
     <ProjectGuid>{1AFA9BB2-64F0-424C-82FE-3967FC840078}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <RootNamespace>FCMExtender</RootNamespace>
-    <AssemblyName>FCMExtender</AssemblyName>
-    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <AssemblyName>FCMPlus</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -50,6 +51,8 @@
   <ItemGroup>
     <Compile Include="bridge\model\IncontroWrapper.cs" />
     <Compile Include="bridge\model\TabellinoWrapper.cs" />
+    <Compile Include="gui\ElabResult.cs" />
+    <Compile Include="gui\ModItem.cs" />
     <Compile Include="gui\ConfigData.cs" />
     <Compile Include="gui\Configuratore.cs">
       <SubType>Form</SubType>
@@ -57,6 +60,7 @@
     <Compile Include="gui\Configuratore.Designer.cs">
       <DependentUpon>Configuratore.cs</DependentUpon>
     </Compile>
+    <Compile Include="gui\Pair.cs" />
     <Compile Include="net\downloader\Downloader.cs" />
     <Compile Include="plus\enhancer\Enhancer.cs" />
     <Compile Include="fcm\calcolatore\CalcoliHelper.cs" />
@@ -93,6 +97,7 @@
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
     </Compile>
     <None Include="packages.config" />
     <None Include="Properties\DataSources\FCMExtender.gui.ConfigData.datasource" />
@@ -111,6 +116,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="fcm\dao\FcmDao.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="warning.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

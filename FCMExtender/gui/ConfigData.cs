@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Xml.Serialization;
+using System.Linq;
 
 namespace FCMExtender.gui
 {
@@ -10,10 +11,10 @@ namespace FCMExtender.gui
         public string competizione { get; set; }
         public string nome { get; set; }
         public bool abilitato { get; set; }
-        public string destinazione { get; set; }
+        public int destinazione { get; set; }
 
         public ConfigData() { }
-        public ConfigData (string competizione, string nome, bool abilitato, string destinazione)
+        public ConfigData (string competizione, string nome, bool abilitato, int destinazione)
         {
             this.competizione = competizione;
             this.nome = nome;
@@ -31,6 +32,7 @@ namespace FCMExtender.gui
 
         public static void Serialize(List<ConfigData> tData, string nomeLega)
         {
+            nomeLega = nomeLega.Split('/').Last().Split('\\').Last();
             var serializer = new XmlSerializer(typeof(List<ConfigData>));
             TextWriter writer = new StringWriter();
             serializer.Serialize(writer, tData);
@@ -40,6 +42,7 @@ namespace FCMExtender.gui
 
         public static List<ConfigData> Deserialize(string nomeLega)
         {
+            nomeLega = nomeLega.Split('/').Last().Split('\\').Last();
             try
             {
                 string ser = System.IO.File.ReadAllText("conf/" + nomeLega +".xml");
@@ -51,6 +54,12 @@ namespace FCMExtender.gui
             {
                 return new List<ConfigData>();
             }
+        }
+
+        public static bool isConfigured(string nomeLega)
+        {
+            nomeLega = nomeLega.Split('/').Last().Split('\\').Last();
+            return System.IO.File.Exists("conf/" + nomeLega + ".xml");
         }
     }
 }
