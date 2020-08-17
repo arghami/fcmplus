@@ -180,10 +180,9 @@ namespace fcm.dao
             {
                 cmd.CommandText = "SELECT i.id, i.idcasa, i.idfuori, i.idtipo, i.parzcasa, i.parzfuori, " +
                     " i.totcasa, i.totfuori, i.golcasa, i.golfuori, fqc.nome, fqf.nome " +
-                    " FROM incontro i, fantasquadra fqc, fantasquadra fqf " +
+                    " FROM (incontro i INNER JOIN fantasquadra fqc ON i.idcasa = fqc.id) " +
+                    " LEFT OUTER JOIN fantasquadra fqf ON i.idfuori = fqf.id " +
                     " WHERE i.idgirone = " + idGirone +
-                    " AND i.idcasa = fqc.id " +
-                    " AND i.idfuori = fqf.id " +
                     " AND i.giornataDiA = " + giornataDiA;
                 using (OdbcDataReader rea = cmd.ExecuteReader())
                 {
@@ -196,17 +195,26 @@ namespace fcm.dao
                         {
                             inc.fattoreCampo = true;
                         }
+                        if (rea.GetInt32(3) == 3)
+                        {
+                            inc.gp = true;
+                        }
                         inc.idIncontro = rea.GetInt32(0);
                         inc.casa = rea.GetInt32(1);
-                        inc.trasferta = rea.GetInt32(2);
+                        if (!inc.gp)
+                            inc.trasferta = rea.GetInt32(2);
                         inc.parzcasa = rea.GetDouble(4);
-                        inc.parzfuori = rea.GetDouble(5);
+                        if (!inc.gp)
+                            inc.parzfuori = rea.GetDouble(5);
                         inc.totcasa = rea.GetDouble(6);
-                        inc.totfuori = rea.GetDouble(7);
+                        if (!inc.gp)
+                            inc.totfuori = rea.GetDouble(7);
                         inc.golcasa = rea.GetInt32(8);
-                        inc.golfuori = rea.GetInt32(9);
+                        if (!inc.gp)
+                            inc.golfuori = rea.GetInt32(9);
                         inc.nomeCasa = rea.GetString(10);
-                        inc.nomeFuori = rea.GetString(11);
+                        if (!inc.gp)
+                            inc.nomeFuori = rea.GetString(11);
                         listaIncontri.Add(inc);
                     }
                     return listaIncontri;

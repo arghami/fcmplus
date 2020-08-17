@@ -26,7 +26,7 @@ namespace fcm.calcolatore
             this.fasceGol = fasceGol;
         }
 
-        public Match calcolaMatch(Tabellino tabellinoJ, Tabellino tabellinoK, Boolean squadraJInCasa, Boolean esisteFattoreCampo)
+        public Match calcolaMatch(Tabellino tabellinoJ, Tabellino tabellinoK, Boolean squadraJInCasa, Boolean esisteFattoreCampo, Boolean gp)
         {
 
             Match match = new Match();
@@ -45,26 +45,29 @@ namespace fcm.calcolatore
             match.squadra1.fattoreCampo = esisteFattoreCampo ? regole.fattoreCampo : 0;
 
             gestisciInferiorita(tabellinoJ.giocatori);
-            gestisciInferiorita(tabellinoK.giocatori);
+            if (!gp)
+                gestisciInferiorita(tabellinoK.giocatori);
 
             squadraJ.parziale = sum11(tabellinoJ.giocatori);
-            squadraK.parziale = sum11(tabellinoK.giocatori);
+            if (!gp)
+                squadraK.parziale = sum11(tabellinoK.giocatori);
 
             //i modificatori portiere rimangono inalterati. Li prelevo dal relativo tabellino
             if (regole.regolaPortiere)
             {
                 squadraJ.modPortiere = tabellinoJ.modPortiere;
-                squadraK.modPortiere = tabellinoK.modPortiere;
+                if (!gp)
+                    squadraK.modPortiere = tabellinoK.modPortiere;
             }
 
             //il mod difesa si calcola con i dati dell'avversario
-            if (regole.regolaDifesa)
+            if (regole.regolaDifesa && !gp)
             {
                 squadraJ.modDifesa = calcolaModDifesa(tabellinoK);
                 squadraK.modDifesa = calcolaModDifesa(tabellinoJ);
             }
 
-            if (regole.regolaCentDiffe)
+            if (regole.regolaCentDiffe && !gp)
             {
                 double modCentrocampo = calcolaModCentrocampoDifferenza(tabellinoJ, tabellinoK);
                 squadraJ.modCentrocampo = modCentrocampo;
@@ -75,26 +78,30 @@ namespace fcm.calcolatore
             if (regole.regolaAttacco)
             {
                 squadraJ.modAttacco = tabellinoJ.modAttacco;
-                squadraK.modAttacco = tabellinoK.modAttacco;
+                if (!gp)
+                    squadraK.modAttacco = tabellinoK.modAttacco;
             }
 
             //anche i modificatori speciali rimangono inalterati
             if (regole.usaSpeciale1)
             {
                 squadraJ.modSpeciale1 = tabellinoJ.modPers1;
-                squadraK.modSpeciale1 = tabellinoK.modPers1;
+                if (!gp)
+                    squadraK.modSpeciale1 = tabellinoK.modPers1;
             }
 
             if (regole.usaSpeciale2)
             {
                 squadraJ.modSpeciale2 = tabellinoJ.modPers2;
-                squadraK.modSpeciale2 = tabellinoK.modPers2;
+                if (!gp)
+                    squadraK.modSpeciale2 = tabellinoK.modPers2;
             }
 
             if (regole.usaSpeciale3)
             {
                 squadraJ.modSpeciale3 = tabellinoJ.modPers3;
-                squadraK.modSpeciale3 = tabellinoK.modPers3;
+                if (!gp)
+                    squadraK.modSpeciale3 = tabellinoK.modPers3;
             }
 
 
@@ -103,20 +110,27 @@ namespace fcm.calcolatore
             if (regole.moduli.ContainsKey(moduloJ) && regole.moduli[moduloJ] != null)
             {
                 squadraJ.modModulo += regole.moduli[moduloJ].modif;
-                squadraK.modModulo += regole.moduli[moduloJ].modifAvv;
+                if (!gp)
+                    squadraK.modModulo += regole.moduli[moduloJ].modifAvv;
             }
 
-            String moduloK = calcModulo(tabellinoK.giocatori);
-            if (regole.moduli.ContainsKey(moduloK) && regole.moduli[moduloK] != null)
+            if (!gp)
             {
-                squadraK.modModulo += regole.moduli[moduloK].modif;
-                squadraJ.modModulo += regole.moduli[moduloK].modifAvv;
+                String moduloK = calcModulo(tabellinoK.giocatori);
+                if (regole.moduli.ContainsKey(moduloK) && regole.moduli[moduloK] != null)
+                {
+                    squadraK.modModulo += regole.moduli[moduloK].modif;
+                    squadraJ.modModulo += regole.moduli[moduloK].modifAvv;
+                }
             }
 
-            squadraJ.numeroGol = (int)getFascia(fasceGol, squadraJ.getTotale()).valore;
-            squadraK.numeroGol = (int)getFascia(fasceGol, squadraK.getTotale()).valore;
+            if (!gp)
+            {
+                squadraJ.numeroGol = (int)getFascia(fasceGol, squadraJ.getTotale()).valore;
+                squadraK.numeroGol = (int)getFascia(fasceGol, squadraK.getTotale()).valore;
+                affinaNumeroGol(squadraJ, squadraK);
+            }
 
-            affinaNumeroGol(squadraJ, squadraK);
             return match;
         }
 

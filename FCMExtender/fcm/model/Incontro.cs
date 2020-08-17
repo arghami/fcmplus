@@ -7,6 +7,7 @@ namespace fcm.model
     {
         public int idIncontro;
         public Boolean fattoreCampo;
+        public Boolean gp;
         public int casa;
         public int trasferta;
         public double parzcasa;

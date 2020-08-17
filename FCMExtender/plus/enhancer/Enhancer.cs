@@ -129,9 +129,21 @@ namespace plus.enhancer
                                     //arricchisco i tabellini con i dati dell'archivio voti
                                     Logger.log("Acquisizione dati archivio per l'incontro ");
                                     Tabellino tabCasa = tabellini[inc.casa];
-                                    Tabellino tabTrasferta = tabellini[inc.trasferta];
+                                    Tabellino tabTrasferta;
+                                    if (!inc.gp)
+                                    {
+                                        tabTrasferta = tabellini[inc.trasferta];
+                                    }
+                                    else
+                                    {
+                                        tabTrasferta = new Tabellino();
+                                        tabTrasferta.giocatori = new Giocatore[0];
+                                    }
                                     dao.aggiungiDettagliGiocatoriATabellino(inc.casa, tabCasa, regole.usaTabellino);
-                                    dao.aggiungiDettagliGiocatoriATabellino(inc.trasferta, tabTrasferta, regole.usaTabellino);
+                                    if (!inc.gp)
+                                    {
+                                        dao.aggiungiDettagliGiocatoriATabellino(inc.trasferta, tabTrasferta, regole.usaTabellino);
+                                    }
 
                                     //applico le regole
                                     Logger.log("Applicazione regole custom ");
@@ -139,7 +151,7 @@ namespace plus.enhancer
 
                                     //ricalcolo il match con i modificatori custom applicati
                                     Logger.log("Ricalcolo del match ");
-                                    Match match = helper.calcolaMatch(tabCasa, tabTrasferta, true, true);
+                                    Match match = helper.calcolaMatch(tabCasa, tabTrasferta, true, inc.fattoreCampo, inc.gp);
 
                                     //scrivo i dati nel db di FCM
                                     Logger.log("Scrittura sul DB FCM ");
@@ -151,11 +163,20 @@ namespace plus.enhancer
                                     ElabResult elResult = new ElabResult();
                                     elResult.competizione = nomeCompetizione;
                                     elResult.giornata = gior.ToString();
-                                    elResult.incontro = inc.nomeCasa + "-" + inc.nomeFuori;
-                                    elResult.vecchioRisultato = inc.golcasa + "-" + inc.golfuori +
-                                        " (" + inc.totcasa + "-" + inc.totfuori + ")";
-                                    elResult.nuovoRisultato = match.squadra1.numeroGol + "-" + match.squadra2.numeroGol +
-                                        " (" + match.squadra1.getTotale() + "-" + match.squadra2.getTotale() + ")";
+                                    if (!inc.gp)
+                                    {
+                                        elResult.incontro = inc.nomeCasa + "-" + inc.nomeFuori;
+                                        elResult.vecchioRisultato = inc.golcasa + "-" + inc.golfuori +
+                                            " (" + inc.totcasa + "-" + inc.totfuori + ")";
+                                        elResult.nuovoRisultato = match.squadra1.numeroGol + "-" + match.squadra2.numeroGol +
+                                            " (" + match.squadra1.getTotale() + "-" + match.squadra2.getTotale() + ")";
+                                    }
+                                    else
+                                    {
+                                        elResult.incontro = inc.nomeCasa;
+                                        elResult.vecchioRisultato = inc.totcasa+"";
+                                        elResult.nuovoRisultato = match.squadra1.getTotale() + "";
+                                    }
                                     elabResultList.Add(elResult);
                                 }
                             }
