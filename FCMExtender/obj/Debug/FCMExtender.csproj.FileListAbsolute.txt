@@ -8,3 +8,13 @@ C:\Users\giafar\Desktop\csharp\FCMExtender\FCMExtender\bin\Debug\Jurassic.dll
 C:\Users\giafar\Desktop\csharp\FCMExtender\FCMExtender\obj\Debug\mainform.Form1.resources
 C:\Users\giafar\Desktop\csharp\FCMExtender\FCMExtender\obj\Debug\FCMExtender.exe
 C:\Users\giafar\Desktop\csharp\FCMExtender\FCMExtender\obj\Debug\FCMExtender.pdb
+C:\Users\Dario\Desktop\FCMExtender_20170823_2\FCMExtender\obj\Debug\FCMExtender.csprojResolveAssemblyReference.cache
+C:\Users\Dario\Desktop\FCMExtender_20170823_2\FCMExtender\obj\Debug\mainform.Form1.resources
+C:\Users\Dario\Desktop\FCMExtender_20170823_2\FCMExtender\obj\Debug\FCMExtender.Properties.Resources.resources
+C:\Users\Dario\Desktop\FCMExtender_20170823_2\FCMExtender\obj\Debug\FCMExtender.csproj.GenerateResource.Cache
+C:\Users\Dario\Desktop\FCMExtender_20170823_2\FCMExtender\obj\Debug\FCMExtender.exe
+C:\Users\Dario\Desktop\FCMExtender_20170823_2\FCMExtender\obj\Debug\FCMExtender.pdb
+C:\Users\Dario\Desktop\FCMExtender_20170823_2\FCMExtender\bin\Debug\FCMExtender.exe.config
+C:\Users\Dario\Desktop\FCMExtender_20170823_2\FCMExtender\bin\Debug\FCMExtender.exe
+C:\Users\Dario\Desktop\FCMExtender_20170823_2\FCMExtender\bin\Debug\FCMExtender.pdb
+C:\Users\Dario\Desktop\FCMExtender_20170823_2\FCMExtender\bin\Debug\Jurassic.dll

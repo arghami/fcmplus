@@ -48,11 +48,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="bridge\model\IncontroWrapper.cs" />
+    <Compile Include="bridge\model\TabellinoWrapper.cs" />
     <Compile Include="EnhancedIncontro.cs" />
     <Compile Include="FCMExtender.cs" />
     <Compile Include="fcm\calcolatore\CalcoliHelper.cs" />
     <Compile Include="fcm\exception\InvalidGiornataException.cs" />
-    <Compile Include="fcm\entity\TabellinoWrapper.cs" />
     <Compile Include="fcm\model\Fascia.cs" />
     <Compile Include="fcm\model\Giocatore.cs" />
     <Compile Include="fcm\model\Incontro.cs" />
@@ -66,7 +67,6 @@
     <Compile Include="Form1.Designer.cs">
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
-    <Compile Include="IncontroWrapper.cs" />
     <Compile Include="math\utils\NumParser.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -2,18 +2,20 @@
 using System.Collections.Generic;
 using System.Data.Odbc;
 using System.IO;
+using System.Reflection;
 
 namespace main
 {
     class FCMExtender
     {
         private static StreamWriter w;
-        static void pippo(string[] args)
+        public static void pippo(string[] args)
         {
-            using (w = File.AppendText(@"C:\Users\Dario\Documents\log.txt"))
+            string basePath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            using (w = File.AppendText(basePath + @"log.txt"))
             {
                 log("inizio");
-                string filename = @"C:\Users\Dario\Documents\Fantacalcio Manager\data\Materdei League 2016-1-2016 - Copia.fcm";
+                string filename = basePath+@"\Materdei League 2016-1-2016 - Copia.fcm";
                 if (args.Length == 3)
                 {
                     filename = args[2].Split('=')[1].Replace("\"", "");

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using main;
+using System;
 using System.Windows.Forms;
 
 namespace mainform
@@ -11,6 +12,7 @@ namespace mainform
         [STAThread]
         static void Main()
         {
+            FCMExtender.pippo(new string[0]);
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new Form1());
