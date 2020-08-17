@@ -14,6 +14,7 @@ namespace fcm.dao
 
         public FcmDao(string filename)
         {
+            conn = new OdbcConnection();
             conn.ConnectionString = @"Driver={Microsoft Access Driver (*.mdb)};Dbq=" + filename + ";";
             conn.Open();
         }
@@ -34,7 +35,7 @@ namespace fcm.dao
                     List<string> comps = new List<string>();
                     while (rea.Read())
                     {
-                        comps.Add(rea.GetString(1) + " - " + rea.GetString(2));
+                        comps.Add(rea.GetString(0) + " - " + rea.GetString(1));
                     }
                     return comps.ToArray();
                 }
@@ -52,9 +53,9 @@ namespace fcm.dao
                     List<string> girs = new List<string>();
                     while (rea.Read())
                     {
-                        string girName = rea.GetString(2);
+                        string girName = rea.GetString(1);
                         girName = girName != null ? girName : "Senza Nome";
-                        girs.Add(rea.GetString(1) + " - " + girName);
+                        girs.Add(rea.GetString(0) + " - " + girName);
                     }
                     return girs.ToArray();
                 }
@@ -73,7 +74,7 @@ namespace fcm.dao
                     while (rea.Read())
                     {
                         //estraggo l'elenco dei gironi
-                        nomiteam.Add(rea.GetInt32(1), rea.GetString(2));
+                        nomiteam.Add(rea.GetInt32(0), rea.GetString(1));
                     }
                     return nomiteam;
 
@@ -98,7 +99,7 @@ namespace fcm.dao
                     List<int> giornate = new List<int>();
                     while (rea.Read())
                     {
-                        giornate.Add(rea.GetInt32(1));
+                        giornate.Add(rea.GetInt32(0));
                     }
                     return giornate;
                 }
@@ -116,7 +117,7 @@ namespace fcm.dao
                     List<int> squadre = new List<int>();
                     while (rea.Read())
                     {
-                        squadre.Add(rea.GetInt32(1));
+                        squadre.Add(rea.GetInt32(0));
                     }
                     return squadre.ToArray();
                 }
@@ -136,13 +137,13 @@ namespace fcm.dao
                     while (rea.Read())
                     {
                         Incontro inc = new Incontro();
-                        if (rea.GetInt32(4) == 1)
+                        if (rea.GetInt32(3) == 1)
                         {
                             inc.fattoreCampo = true;
                         }
-                        inc.idIncontro = rea.GetString(1);
-                        inc.casa = rea.GetString(2);
-                        inc.trasferta = rea.GetString(3);
+                        inc.idIncontro = rea.GetString(0);
+                        inc.casa = rea.GetString(1);
+                        inc.trasferta = rea.GetString(2);
                         listaIncontri.Add(inc);
                     }
                     return listaIncontri;
@@ -164,33 +165,33 @@ namespace fcm.dao
                     while (rea.Read())
                     {
                         Tabellino tab = new Tabellino();
-                        string votistring = rea.GetString(2);
+                        string votistring = rea.GetString(1);
                         if (votistring != null)
                         {
                             tab.voti = votistring.Split('%');
                             saltaGiornata = false;
                         }
-                        string ruolistring = rea.GetString(3);
+                        string ruolistring = rea.GetString(2);
                         if (ruolistring != null)
                         {
                             tab.ruoli = ruolistring.Split('%');
                             saltaGiornata = false;
                         }
-                        tab.modPortiere = rea.GetDouble(4);
-                        tab.modAttacco = rea.GetDouble(5);
-                        tab.modDifesa = rea.GetDouble(6);
+                        tab.modPortiere = rea.GetDouble(3);
+                        tab.modAttacco = rea.GetDouble(4);
+                        tab.modDifesa = rea.GetDouble(5);
 
-                        string votipuristring = rea.GetString(7);
+                        string votipuristring = rea.GetString(6);
                         if (votipuristring != null)
                         {
                             tab.votipuri = votipuristring.Split('%');
                             saltaGiornata = false;
                         }
 
-                        tab.modPers1 = rea.GetDouble(8);
-                        tab.modPers2 = rea.GetDouble(9);
-                        tab.modPers3 = rea.GetDouble(10);
-                        mapTabellini.Add(rea.GetInt32(1), tab);
+                        tab.modPers1 = rea.GetDouble(7);
+                        tab.modPers2 = rea.GetDouble(8);
+                        tab.modPers3 = rea.GetDouble(9);
+                        mapTabellini.Add(rea.GetInt32(0), tab);
                     }
                     if (saltaGiornata)
                     {
@@ -306,9 +307,9 @@ namespace fcm.dao
                     while (rea.Read())
                     {
                         Fascia fascia = new Fascia();
-                        fascia.valore = rea.GetDouble(1);
-                        fascia.min = rea.GetDouble(2);
-                        fascia.max = rea.GetDouble(3);
+                        fascia.valore = rea.GetDouble(0);
+                        fascia.min = rea.GetDouble(1);
+                        fascia.max = rea.GetDouble(2);
                         listaFasce.Add(fascia);
                     }
                     return listaFasce;
