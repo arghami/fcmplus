@@ -225,6 +225,76 @@ namespace fcm.dao
             return getDatiDaFasceByQuery("SELECT f.valore, f.min, f.max FROM tabellacentrocampodiffe d, fascia f WHERE d.idcompetizione = " + idCompetizione + " AND d.idfascia=f.id");
         }
 
+        public void setDatiIncontro(int idIncontro, int idSquadraCasa, int idSquadraFuori, Match match, Boolean[] modPers)
+        {
+            updateTabellino(idIncontro, idSquadraCasa, match.squadra1, modPers);
+            updateTabellino(idIncontro, idSquadraFuori, match.squadra2, modPers);
+            updateIncontro(idIncontro, idSquadraCasa, idSquadraFuori, match, modPers);
+        }
+
+        private void updateTabellino(int idIncontro, int idSquadra, Match.Team squadra, Boolean[] modPers)
+        {
+            using (OdbcCommand cmd = conn.CreateCommand())
+            {
+                cmd.CommandText = "update tabellino set parzialeSquadra=?, totaleSquadra=?, gol=? ";
+                cmd.Parameters.AddWithValue("@ParzialeSquadra", squadra.parziale);
+                cmd.Parameters.AddWithValue("@TotaleSquadra", squadra.getTotale());
+                cmd.Parameters.AddWithValue("@Gol", squadra.numeroGol);
+                for (int i = 0; i < 3; i++)
+                {
+                    if (modPers[i])
+                    {
+                        cmd.CommandText += ",modm" + i + "pers=? , modm" + i + "persesiste=true ";
+                        cmd.Parameters.AddWithValue("@modm" + i + "pers", getModPersValue(i, squadra));
+                    }
+                }
+                cmd.CommandText += " where IDIncontro = ? and IDSquadra = ?";
+                cmd.Parameters.AddWithValue("@IDIncontro", idIncontro);
+                cmd.Parameters.AddWithValue("@IDSquadra", idSquadra);
+                cmd.ExecuteNonQuery();
+            }
+        }
+
+        private void updateIncontro(int idIncontro, int idSquadraCasa, int idSquadraFuori, Match match, Boolean[] modPers)
+        {
+            using (OdbcCommand cmd = conn.CreateCommand())
+            {
+                cmd.CommandText = "update incontro set parzCasa=?, parzFuori=?, totCasa=?, totFuori=?, golCasa?, golFuori=? ";
+                cmd.Parameters.AddWithValue("@ParzCasa", match.squadra1.parziale);
+                cmd.Parameters.AddWithValue("@ParzFuori", match.squadra2.parziale);
+                cmd.Parameters.AddWithValue("@TotCasa", match.squadra1.getTotale());
+                cmd.Parameters.AddWithValue("@TotFuori", match.squadra2.getTotale());
+                cmd.Parameters.AddWithValue("@GolCasa", match.squadra1.numeroGol);
+                cmd.Parameters.AddWithValue("@GolFuori", match.squadra2.numeroGol);
+                for (int i = 0; i < 3; i++)
+                {
+                    if (modPers[i])
+                    {
+                        cmd.CommandText += ",m" + i + "Casa=? , m" + i + "Fuori=? ";
+                        cmd.Parameters.AddWithValue("@M" + i + "Casa", getModPersValue(i, match.squadra1));
+                        cmd.Parameters.AddWithValue("@M" + i + "Fuori", getModPersValue(i, match.squadra2));
+                    }
+                }
+                cmd.CommandText += "where id=?";
+                cmd.Parameters.AddWithValue("@ID", idIncontro);
+                cmd.ExecuteNonQuery();
+            }
+        }
+
+        private double getModPersValue(int idMod, Match.Team squadra)
+        {
+            switch (idMod)
+            {
+                case 0:
+                    return squadra.modSpeciale1;
+                case 1:
+                    return squadra.modSpeciale2;
+                case 2:
+                    return squadra.modSpeciale3;
+            }
+            return 0;
+        }
+
         private List<Fascia> getDatiDaFasceByQuery(string query)
         {
             using (OdbcCommand cmd = conn.CreateCommand())
