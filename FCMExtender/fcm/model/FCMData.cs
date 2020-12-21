@@ -6,6 +6,7 @@ namespace fcm.model
     {
         public int idGiocatore;
         public int codiceFCM;
+        public string nome;
         public int giornata;
         public int golfatti;
         public int golfatti1;

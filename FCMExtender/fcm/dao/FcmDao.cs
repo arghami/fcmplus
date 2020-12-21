@@ -195,6 +195,11 @@ namespace fcm.dao
                         {
                             inc.fattoreCampo = true;
                         }
+                        if (rea.GetInt32(3) == 2)
+                        {
+                            //è un incontro di riposo, salto
+                            continue;
+                        }
                         if (rea.GetInt32(3) == 3)
                         {
                             inc.gp = true;
@@ -382,7 +387,7 @@ namespace fcm.dao
                     " p.rigsba, p.rigpar, p.autogol1, p.autogol2, p.autogol3, " +
                     " p.golsubiti, p.golsubitisurigore, p.assist, " +
                     " p.amm, p.esp, " + //questi sono booleani
-                    " ar.codicegazza, ar.dataDiNascita, t.annoDiContratto " +
+                    " ar.nome, ar.codicegazza, ar.dataDiNascita, t.annoDiContratto " +
                     " FROM giocaIn g, punteggio p, GIOCATOREA ar, tesserato t " +
                     " where g.idPunteggio=p.id " +
                     " AND g.idGiocatore=ar.id " +
@@ -426,9 +431,10 @@ namespace fcm.dao
                         data.assist = rea.GetInt32(21);
                         data.amm = rea.GetBoolean(22);
                         data.esp = rea.GetBoolean(23);
-                        data.codiceFCM = rea.GetInt32(24);
-                        data.dataDiNascita = rea.GetDate(25);
-                        data.primavera = rea.GetInt32(26)>100;
+                        data.nome = rea.GetString(24);
+                        data.codiceFCM = rea.GetInt32(25);
+                        data.dataDiNascita = rea.GetDate(26);
+                        data.primavera = rea.GetInt32(27)>100;
                         datiGiocatori.Add(data.idGiocatore, data);
                     }
                     return datiGiocatori;

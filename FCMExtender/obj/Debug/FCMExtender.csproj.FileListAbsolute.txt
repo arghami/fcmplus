@@ -215,3 +215,16 @@ C:\Users\Dario\Desktop\FCMExtender_20171113\FCMExtender\obj\Debug\FCMExtender.Pr
 C:\Users\Dario\Desktop\FCMExtender_20171113\FCMExtender\obj\Debug\FCMExtender.csproj.GenerateResource.Cache
 C:\Users\Dario\Desktop\FCMExtender_20171113\FCMExtender\obj\Debug\FCMPlus.exe
 C:\Users\Dario\Desktop\FCMExtender_20171113\FCMExtender\obj\Debug\FCMPlus.pdb
+C:\Users\Administrator\Desktop\fcmplus\FCMExtender\bin\Debug\FCMPlus.exe.config
+C:\Users\Administrator\Desktop\fcmplus\FCMExtender\bin\Debug\FCMPlus.exe
+C:\Users\Administrator\Desktop\fcmplus\FCMExtender\bin\Debug\FCMPlus.pdb
+C:\Users\Administrator\Desktop\fcmplus\FCMExtender\bin\Debug\Jurassic.dll
+C:\Users\Administrator\Desktop\fcmplus\FCMExtender\obj\Debug\FCMExtender.csprojAssemblyReference.cache
+C:\Users\Administrator\Desktop\fcmplus\FCMExtender\obj\Debug\FCMExtender.gui.Configuratore.resources
+C:\Users\Administrator\Desktop\fcmplus\FCMExtender\obj\Debug\mainform.WelcomeUI.resources
+C:\Users\Administrator\Desktop\fcmplus\FCMExtender\obj\Debug\FCMExtender.Properties.Resources.resources
+C:\Users\Administrator\Desktop\fcmplus\FCMExtender\obj\Debug\FCMExtender.csproj.GenerateResource.cache
+C:\Users\Administrator\Desktop\fcmplus\FCMExtender\obj\Debug\FCMExtender.csproj.CoreCompileInputs.cache
+C:\Users\Administrator\Desktop\fcmplus\FCMExtender\obj\Debug\FCMExtender.csproj.CopyComplete
+C:\Users\Administrator\Desktop\fcmplus\FCMExtender\obj\Debug\FCMPlus.exe
+C:\Users\Administrator\Desktop\fcmplus\FCMExtender\obj\Debug\FCMPlus.pdb

@@ -22,6 +22,7 @@ namespace bridge.model
                 //anagrafici
                 gioc["id"] = NumParser.parseInt(gio.idGiocatore);
                 gioc["codiceFCM"] = gio.fcmData.codiceFCM;
+                gioc["nome"] = gio.fcmData.nome;
                 System.DateTime d = gio.fcmData.dataDiNascita;
                 gioc["dataDiNascita"] = engine.Date.Construct(d.Year, d.Month, d.Day);
                 gioc["primavera"] = gio.fcmData.primavera;

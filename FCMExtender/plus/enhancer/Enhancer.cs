@@ -222,7 +222,15 @@ namespace plus.enhancer
             string[] filePaths = Directory.GetFiles(basePath+@"\data", "*.js", SearchOption.TopDirectoryOnly);
             foreach (var fName in filePaths)
             {
-                jsEngine.ExecuteFile(fName);
+                try
+                {
+                    jsEngine.ExecuteFile(fName);
+                }
+                catch (Exception ex)
+                {
+                    Logger.log("Errore javascript: " + ex.ToString());
+                    throw ex;
+                }
             }
 
             jsEngine.SetGlobalValue("incontro", incontro);
@@ -256,7 +264,15 @@ namespace plus.enhancer
                 if (config.abilitato)
                 {
                     string cust = "_customs['" + config.nome + "']";
-                    jsEngine.Execute(cust+".func.apply(null, [incontro, null])");
+                    try
+                    {
+                        jsEngine.Execute(cust + ".func.apply(null, [incontro, null])");
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.log("Errore javascript: " + ex.ToString());
+                        throw ex;
+                    }
                     //leggo i dati dei modificatori scritti dal javascript e li inserisco nei tabellini
                     double modCasa = safeDouble(incontro.getCasa().get("Mod"));
                     double modFuori = safeDouble(incontro.getTrasferta().get("Mod"));

@@ -73,7 +73,7 @@ namespace mainform
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Si è verificato un errore: "+ex.Message, "Errore", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Si è verificato un errore: "+ex.ToString(), "Errore", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             progressBarAvanzamento.Visible = false;
         }

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Reflection;
@@ -46,7 +47,7 @@ namespace net.downloader
                 {
                     string endpoint = url.url.Replace("[GG]", ""+giornata);
                     Logger.log("Downloading " + endpoint);
-                    string filename = url.localName+endpoint.Split('/')[endpoint.Split('/').Length-1];
+                    string filename = calcTempFilename(url, endpoint);
                     client.DownloadFile(endpoint, basePath+@"\data\" + filename);
                 }
                 if (!staticiScaricati)
@@ -54,12 +55,20 @@ namespace net.downloader
                     foreach (var url in urlsStatici)
                     {
                         Logger.log("Downloading " + url.url);
-                        string filename = url.localName + url.url.Split('/')[url.url.Split('/').Length - 1];
+                        string filename = calcTempFilename(url, url.url);
                         client.DownloadFile(url.url, basePath + @"\data\" + filename);
                     }
                     staticiScaricati = true;
                 }
             }
+        }
+
+        private string calcTempFilename(MyUrl url, string endpoint)
+        {
+            string filename = url.localName.Split('\\')[url.localName.Split('\\').Length - 1] +
+                        endpoint.Split('/')[endpoint.Split('/').Length - 1];
+            filename = filename.Split('?')[0];
+            return filename;
         }
 
         public void cleanDataDir()
